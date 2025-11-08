@@ -29,7 +29,7 @@ export function ComponentSidebar({
   );
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-background">
+    <div className="flex h-screen w-64 flex-col border-r bg-background overflow-scroll">
       <div className="p-4">
         <h2 className="mb-2 text-lg font-semibold">Components</h2>
         <p className="text-sm text-muted-foreground">
@@ -65,10 +65,10 @@ export function ComponentSidebar({
       <Separator />
       <div className="p-4">
         <p className="text-xs text-muted-foreground">
-          {filteredComponents.length} component{filteredComponents.length !== 1 ? "s" : ""}
+          {filteredComponents.length} component
+          {filteredComponents.length !== 1 ? "s" : ""}
         </p>
       </div>
     </div>
   );
 }
-
