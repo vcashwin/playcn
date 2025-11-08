@@ -167,7 +167,12 @@ root.render(
             </div>
             <div className="flex-1 overflow-hidden">
               <SandboxLayout>
-                <SandboxCodeEditor showTabs showLineNumbers showInlineErrors />
+                <SandboxCodeEditor
+                  showTabs
+                  showLineNumbers
+                  showInlineErrors
+                  className="h-full!"
+                />
               </SandboxLayout>
             </div>
           </div>

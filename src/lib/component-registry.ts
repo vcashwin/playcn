@@ -28,9 +28,11 @@ export const componentDependencies: Record<string, Record<string, string>> = {
   },
   badge: {
     "class-variance-authority": "^0.7.1",
+    "@radix-ui/react-slot": "^1.2.4",
   },
   breadcrumb: {
     "lucide-react": "^0.553.0",
+    "@radix-ui/react-slot": "^1.2.4",
   },
   "button-group": {},
   button: {
@@ -47,7 +49,7 @@ export const componentDependencies: Record<string, Record<string, string>> = {
     "lucide-react": "^0.553.0",
   },
   chart: {
-    "recharts": "2.15.4",
+    recharts: "2.15.4",
     "lucide-react": "^0.553.0",
   },
   checkbox: {
@@ -425,7 +427,9 @@ export function getComponentExample(componentName: string): string {
   return componentExamples[componentName] || getDefaultExample(componentName);
 }
 
-export function getComponentDependencies(componentName: string): Record<string, string> {
+export function getComponentDependencies(
+  componentName: string
+): Record<string, string> {
   return {
     react: "^19.2.0",
     "react-dom": "^19.2.0",
@@ -435,4 +439,3 @@ export function getComponentDependencies(componentName: string): Record<string, 
     ...componentDependencies[componentName],
   };
 }
-
