@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { componentExamples } from "@/lib/component-registry";
+
+/**
+ * Extracts @/components/ui/ imports from a code string
+ */
+function extractUIImports(code: string): string[] {
+  const importRegex = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
+  const matches = [...code.matchAll(importRegex)];
+  return matches.map((match) => match[1]);
+}
 
 /**
  * Recursively loads component dependencies by parsing imports
@@ -28,13 +38,10 @@ async function loadComponentWithDependencies(
     files[componentKey] = code;
 
     // Parse imports to find dependencies on @/components/ui/
-    // Match patterns like: from "@/components/ui/separator"
-    const importRegex = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
-    const matches = [...code.matchAll(importRegex)];
+    const dependencies = extractUIImports(code);
 
     // Load each dependency recursively
-    for (const match of matches) {
-      const dependencyName = match[1];
+    for (const dependencyName of dependencies) {
       const dependencyFileName = `${dependencyName}.tsx`;
 
       const dependencyFiles = await loadComponentWithDependencies(
@@ -61,9 +68,42 @@ export async function GET(
   try {
     const { name } = await params;
     const componentsDir = join(process.cwd(), "src", "components", "ui");
+    const loadedComponents = new Set<string>();
 
     // Load the main component and all its dependencies
-    const files = await loadComponentWithDependencies(name, componentsDir);
+    const files = await loadComponentWithDependencies(
+      name,
+      componentsDir,
+      loadedComponents
+    );
+
+    // Get the example code for this component
+    const componentKey = name.replace(/\.tsx?$/, "");
+    const exampleCode = componentExamples[componentKey];
+
+    if (exampleCode) {
+      // Extract dependencies from the example code
+      const exampleDependencies = extractUIImports(exampleCode);
+
+      // Load any dependencies from the example code that weren't already loaded
+      for (const dependencyName of exampleDependencies) {
+        const dependencyFileName = `${dependencyName}.tsx`;
+
+        // Only load if not already loaded
+        if (!loadedComponents.has(dependencyFileName)) {
+          const dependencyFiles = await loadComponentWithDependencies(
+            dependencyFileName,
+            componentsDir,
+            loadedComponents
+          );
+
+          // Merge dependency files
+          Object.assign(files, dependencyFiles);
+        }
+      }
+    }
+
+    console.log(`Final files for ${name}:`, Object.keys(files));
 
     return NextResponse.json({ files });
   } catch (error) {
