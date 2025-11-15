@@ -19,6 +19,9 @@ export default function Home() {
     null
   );
   const [componentCode, setComponentCode] = useState<string>("");
+  const [componentFiles, setComponentFiles] = useState<Record<string, string>>(
+    {}
+  );
   const [loading, setLoading] = useState(false);
 
   // Load the list of components
@@ -47,7 +50,15 @@ export default function Home() {
       try {
         const response = await fetch(`/api/components/${selectedComponent}`);
         const data = await response.json();
-        setComponentCode(data.code);
+
+        // The API now returns all files (main component + dependencies)
+        setComponentFiles(data.files || {});
+
+        // Extract the main component code (without .tsx extension)
+        if (selectedComponent) {
+          const mainComponentKey = selectedComponent.replace(".tsx", "");
+          setComponentCode(data.files?.[mainComponentKey] || "");
+        }
       } catch (error) {
         console.error("Failed to load component code:", error);
       } finally {
@@ -86,6 +97,7 @@ export default function Home() {
           <ComponentViewer
             componentName={selectedComponent.replace(".tsx", "")}
             componentCode={componentCode}
+            componentFiles={componentFiles}
             exampleCode={getComponentExample(
               selectedComponent.replace(".tsx", "")
             )}

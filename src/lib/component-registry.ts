@@ -176,73 +176,168 @@ export const componentDependencies: Record<string, Record<string, string>> = {
 
 // Example code for each component
 export const componentExamples: Record<string, string> = {
-  button: `import { Button } from "./button";
+  button: `import { Button } from "./button"
 
 export default function ButtonDemo() {
   return (
-    <div className="flex gap-4 p-4">
+    <div className="flex flex-wrap gap-4">
       <Button>Default</Button>
+      <Button variant="secondary">Secondary</Button>
       <Button variant="destructive">Destructive</Button>
       <Button variant="outline">Outline</Button>
-      <Button variant="secondary">Secondary</Button>
       <Button variant="ghost">Ghost</Button>
       <Button variant="link">Link</Button>
     </div>
-  );
+  )
 }`,
-  card: `import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
+  card: `import { Button } from "./button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./card"
+import { Input } from "./input"
+import { Label } from "./label"
 
 export default function CardDemo() {
   return (
-    <Card className="w-[350px]">
+    <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>
+          Enter your email below to create your account
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Card Content</p>
+        <form>
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" required />
+            </div>
+          </div>
+        </form>
       </CardContent>
-      <CardFooter className="gap-2">
-        <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90">
-          Action
-        </button>
+      <CardFooter>
+        <Button className="w-full">Create account</Button>
       </CardFooter>
     </Card>
-  );
+  )
 }`,
-  badge: `import { Badge } from "./badge";
+  badge: `import { BadgeCheckIcon } from "lucide-react"
+
+import { Badge } from "./badge"
 
 export default function BadgeDemo() {
   return (
-    <div className="flex gap-2 p-4">
-      <Badge>Default</Badge>
-      <Badge variant="secondary">Secondary</Badge>
-      <Badge variant="destructive">Destructive</Badge>
-      <Badge variant="outline">Outline</Badge>
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex w-full flex-wrap gap-2">
+        <Badge>Badge</Badge>
+        <Badge variant="secondary">Secondary</Badge>
+        <Badge variant="destructive">Destructive</Badge>
+        <Badge variant="outline">Outline</Badge>
+      </div>
+      <div className="flex w-full flex-wrap gap-2">
+        <Badge
+          variant="secondary"
+          className="bg-blue-500 text-white dark:bg-blue-600"
+        >
+          <BadgeCheckIcon />
+          Verified
+        </Badge>
+        <Badge className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">
+          8
+        </Badge>
+        <Badge
+          className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums"
+          variant="destructive"
+        >
+          99
+        </Badge>
+        <Badge
+          className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums"
+          variant="outline"
+        >
+          20+
+        </Badge>
+      </div>
     </div>
-  );
+  )
 }`,
-  accordion: `import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./accordion";
+  accordion: `import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./accordion"
 
 export default function AccordionDemo() {
   return (
-    <Accordion type="single" collapsible className="w-full">
+    <Accordion
+      type="single"
+      collapsible
+      className="w-full"
+      defaultValue="item-1"
+    >
       <AccordionItem value="item-1">
-        <AccordionTrigger>Is it accessible?</AccordionTrigger>
-        <AccordionContent>
-          Yes. It adheres to the WAI-ARIA design pattern.
+        <AccordionTrigger>Product Information</AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-4 text-balance">
+          <p>
+            Our flagship product combines cutting-edge technology with sleek
+            design. Built with premium materials, it offers unparalleled
+            performance and reliability.
+          </p>
+          <p>
+            Key features include advanced processing capabilities, and an
+            intuitive user interface designed for both beginners and experts.
+          </p>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-2">
-        <AccordionTrigger>Is it styled?</AccordionTrigger>
-        <AccordionContent>
-          Yes. It comes with default styles that matches the other components aesthetic.
+        <AccordionTrigger>Shipping Details</AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-4 text-balance">
+          <p>
+            We offer worldwide shipping through trusted courier partners.
+            Standard delivery takes 3-5 business days, while express shipping
+            ensures delivery within 1-2 business days.
+          </p>
+          <p>
+            All orders are carefully packaged and fully insured. Track your
+            shipment in real-time through our dedicated tracking portal.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="item-3">
+        <AccordionTrigger>Return Policy</AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-4 text-balance">
+          <p>
+            We stand behind our products with a comprehensive 30-day return
+            policy. If you're not completely satisfied, simply return the
+            item in its original condition.
+          </p>
+          <p>
+            Our hassle-free return process includes free return shipping and
+            full refunds processed within 48 hours of receiving the returned
+            item.
+          </p>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-  );
+  )
 }`,
-  checkbox: `import { Checkbox } from "./checkbox";
+  checkbox: `import { Checkbox } from "./checkbox"
 
 export default function CheckboxDemo() {
   return (
@@ -255,23 +350,29 @@ export default function CheckboxDemo() {
         Accept terms and conditions
       </label>
     </div>
-  );
+  )
 }`,
-  input: `import { Input } from "./input";
+  input: `import { Input } from "./input"
 
 export default function InputDemo() {
-  return <Input type="email" placeholder="Email" />;
+  return <Input type="email" placeholder="Email" />
 }`,
-  label: `import { Label } from "./label";
+  label: `import { Label } from "./label"
 
 export default function LabelDemo() {
   return (
     <div>
       <Label htmlFor="email">Your email address</Label>
     </div>
-  );
+  )
 }`,
-  select: `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+  select: `import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select"
 
 export default function SelectDemo() {
   return (
@@ -282,103 +383,146 @@ export default function SelectDemo() {
       <SelectContent>
         <SelectItem value="apple">Apple</SelectItem>
         <SelectItem value="banana">Banana</SelectItem>
-        <SelectItem value="orange">Orange</SelectItem>
+        <SelectItem value="blueberry">Blueberry</SelectItem>
+        <SelectItem value="grapes">Grapes</SelectItem>
+        <SelectItem value="pineapple">Pineapple</SelectItem>
       </SelectContent>
     </Select>
-  );
+  )
 }`,
-  switch: `import { Switch } from "./switch";
+  switch: `import { Label } from "./label"
+import { Switch } from "./switch"
 
 export default function SwitchDemo() {
   return (
     <div className="flex items-center space-x-2">
       <Switch id="airplane-mode" />
-      <label htmlFor="airplane-mode">Airplane Mode</label>
+      <Label htmlFor="airplane-mode">Airplane Mode</Label>
     </div>
-  );
+  )
 }`,
-  textarea: `import { Textarea } from "./textarea";
+  textarea: `import { Textarea } from "./textarea"
 
 export default function TextareaDemo() {
-  return <Textarea placeholder="Type your message here." />;
+  return <Textarea placeholder="Type your message here." />
 }`,
-  slider: `import { Slider } from "./slider";
+  slider: `import { Slider } from "./slider"
 
 export default function SliderDemo() {
-  return <Slider defaultValue={[50]} max={100} step={1} />;
+  return <Slider defaultValue={[50]} max={100} step={1} className="w-[60%]" />
 }`,
-  progress: `import { Progress } from "./progress";
+  progress: `import { Progress } from "./progress"
 
 export default function ProgressDemo() {
-  return <Progress value={33} />;
+  return <Progress value={33} className="w-[60%]" />
 }`,
-  tabs: `import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
+  tabs: `import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "./tabs"
 
 export default function TabsDemo() {
   return (
     <Tabs defaultValue="account" className="w-[400px]">
-      <TabsList>
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="account">Account</TabsTrigger>
         <TabsTrigger value="password">Password</TabsTrigger>
       </TabsList>
       <TabsContent value="account">
-        Make changes to your account here.
+        <p className="text-sm text-muted-foreground">
+          Make changes to your account here. Click save when you're done.
+        </p>
       </TabsContent>
       <TabsContent value="password">
-        Change your password here.
+        <p className="text-sm text-muted-foreground">
+          Change your password here. After saving, you'll be logged out.
+        </p>
       </TabsContent>
     </Tabs>
-  );
+  )
 }`,
-  tooltip: `import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+  tooltip: `import { Button } from "./button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./tooltip"
 
 export default function TooltipDemo() {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground">
-            Hover
-          </button>
+          <Button variant="outline">Hover</Button>
         </TooltipTrigger>
         <TooltipContent>
           <p>Add to library</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
+  )
 }`,
-  alert: `import { Alert, AlertDescription, AlertTitle } from "./alert";
+  alert: `import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react"
+
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "./alert"
 
 export default function AlertDemo() {
   return (
-    <Alert>
-      <AlertTitle>Heads up!</AlertTitle>
-      <AlertDescription>
-        You can add components to your app using the cli.
-      </AlertDescription>
-    </Alert>
-  );
+    <div className="grid w-full max-w-xl items-start gap-4">
+      <Alert>
+        <CheckCircle2Icon />
+        <AlertTitle>Success! Your changes have been saved</AlertTitle>
+        <AlertDescription>
+          This is an alert with icon, title and description.
+        </AlertDescription>
+      </Alert>
+      <Alert>
+        <PopcornIcon />
+        <AlertTitle>
+          This Alert has a title and an icon. No description.
+        </AlertTitle>
+      </Alert>
+      <Alert variant="destructive">
+        <AlertCircleIcon />
+        <AlertTitle>Unable to process your payment.</AlertTitle>
+        <AlertDescription>
+          <p>Please verify your billing information and try again.</p>
+          <ul className="list-inside list-disc text-sm">
+            <li>Check your card details</li>
+            <li>Ensure sufficient funds</li>
+            <li>Verify billing address</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
+    </div>
+  )
 }`,
-  skeleton: `import { Skeleton } from "./skeleton";
+  skeleton: `import { Skeleton } from "./skeleton"
 
 export default function SkeletonDemo() {
   return (
-    <div className="flex flex-col space-y-3">
-      <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+    <div className="flex items-center space-x-4">
+      <Skeleton className="h-12 w-12 rounded-full" />
       <div className="space-y-2">
         <Skeleton className="h-4 w-[250px]" />
         <Skeleton className="h-4 w-[200px]" />
       </div>
     </div>
-  );
+  )
 }`,
-  spinner: `import { Spinner } from "./spinner";
+  spinner: `import { Spinner } from "./spinner"
 
 export default function SpinnerDemo() {
-  return <Spinner />;
+  return <Spinner />
 }`,
-  separator: `import { Separator } from "./separator";
+  separator: `import { Separator } from "./separator"
 
 export default function SeparatorDemo() {
   return (
@@ -398,7 +542,7 @@ export default function SeparatorDemo() {
         <div>Source</div>
       </div>
     </div>
-  );
+  )
 }`,
 };
 
@@ -425,7 +569,7 @@ export function getComponentExample(componentName: string): string {
 }
 
 export function getComponentDependencies(
-  componentName: string
+  _componentName: string
 ): Record<string, string> {
   return {
     "@codesandbox/sandpack-react": "^2.20.0",
@@ -475,15 +619,5 @@ export function getComponentDependencies(
     "tailwind-merge": "^3.3.1",
     vaul: "^1.1.2",
     zod: "^4.1.12",
-    "@biomejs/biome": "2.2.0",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    tailwindcss: "^4",
-    "tw-animate-css": "^1.4.0",
-    typescript: "^5",
-    ...componentDependencies[componentName],
   };
 }
