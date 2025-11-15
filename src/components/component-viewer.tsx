@@ -5,7 +5,6 @@ import {
   SandboxLayout,
   SandboxCodeEditor,
   SandboxPreview,
-  SandboxConsole,
 } from "@/components/kibo-ui/sandbox";
 import { useEffect, useState } from "react";
 
@@ -24,7 +23,9 @@ export function ComponentViewer({
   exampleCode,
   dependencies,
 }: ComponentViewerProps) {
-  const [files, setFiles] = useState<Record<string, { code: string }>>({});
+  const [files, setFiles] = useState<
+    Record<string, { code: string; readOnly?: boolean }>
+  >({});
 
   useEffect(() => {
     // Transform component code to use relative imports instead of path aliases
@@ -37,12 +38,14 @@ export function ComponentViewer({
       .replace(/@\/lib\/utils/g, "./utils")
       .replace(/@\/components\/ui\//g, "./");
 
-    const setupFiles: Record<string, { code: string }> = {
+    const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
       "/App.tsx": {
         code: transformedExampleCode,
+        readOnly: false, // Editable
       },
       [`/${componentName}.tsx`]: {
         code: transformedComponentCode,
+        readOnly: false, // Editable
       },
       "/index.tsx": {
         code: `
@@ -50,8 +53,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
+import "./input.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`,
+        readOnly: true, // Read-only
       },
 
       "/utils.ts": {
@@ -63,6 +68,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 `,
+        readOnly: true, // Read-only
       },
 
       "/postcss.config.js": {
@@ -74,14 +80,11 @@ export default {
   },
 }
 `,
+        readOnly: true, // Read-only
       },
 
-      "/styles.css": {
+      "/input.css": {
         code: `
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --background: rgb(250, 245, 250);
   --foreground: rgb(80, 24, 84);
@@ -189,7 +192,16 @@ export default {
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
+        `,
+      },
+
+      "/styles.css": {
+        code: `
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
       `,
+        readOnly: false,
       },
 
       "/tailwind.config.js": {
@@ -268,6 +280,7 @@ export default {
 };
 
         `,
+        readOnly: true, // Read-only
       },
 
       "/index.html": {
@@ -285,6 +298,7 @@ export default {
     </body>
   </html>
   `,
+        readOnly: true, // Read-only
       },
 
       "/package.json": {
@@ -305,7 +319,7 @@ export default {
             devDependencies: {
               "@types/react": "^19.0.8",
               "@types/react-dom": "^19.0.3",
-              "@vitejs/plugin-react": "^3.1.0",
+              "@vitejs/plugin-react": "^4.3.4",
               typescript: "~4.9.3",
               vite: "4.2.0",
               tailwindcss: "3.4.17",
@@ -317,6 +331,7 @@ export default {
           null,
           2
         ),
+        readOnly: true, // Read-only
       },
     };
 
@@ -332,6 +347,7 @@ export default {
 
       setupFiles[`/${fileName}.tsx`] = {
         code: transformedCode,
+        readOnly: false, // Component files are editable
       };
     }
 
@@ -349,7 +365,7 @@ export default {
   return (
     <SandboxProvider template="vite-react-ts" files={files}>
       <div className="h-screen grid grid-cols-2">
-        <div className="col-span-1 border-r">
+        <div className="col-span-1 border-r overflow-y-scroll">
           <div className="h-full flex flex-col">
             <div className="bg-secondary px-4 py-2 border-b">
               <h3 className="text-sm font-medium">Code</h3>
@@ -360,7 +376,7 @@ export default {
                   showTabs
                   showLineNumbers
                   showInlineErrors
-                  className="h-[90vh]"
+                  className="h-full! pb-8 "
                 />
               </SandboxLayout>
             </div>
@@ -371,24 +387,14 @@ export default {
             <div className="bg-secondary px-4 py-2 border-b">
               <h3 className="text-sm font-medium">Preview</h3>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <SandboxLayout>
                 <SandboxPreview
-                  showOpenInCodeSandbox={true}
+                  showOpenInCodeSandbox={false}
                   showRefreshButton
                   className="h-full! p-8"
                 />
               </SandboxLayout>
-            </div>
-            <div className="h-128 border-t">
-              <div className="bg-secondary px-4 py-2 border-b">
-                <h3 className="text-sm font-medium">Console</h3>
-              </div>
-              <div className="h-[calc(100%-2.5rem)] overflow-auto">
-                <SandboxLayout>
-                  <SandboxConsole />
-                </SandboxLayout>
-              </div>
             </div>
           </div>
         </div>
