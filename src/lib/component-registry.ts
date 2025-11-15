@@ -314,14 +314,12 @@ export default function AlertDialogDemo() {
   )
 }`,
 
-  "aspect-ratio": `import Image from "next/image"
-
-import { AspectRatio } from "@/components/ui/aspect-ratio"
+  "aspect-ratio": `import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 export default function AspectRatioDemo() {
   return (
     <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg">
-      <Image
+      <img
         src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80"
         alt="Photo by Drew Beamer"
         fill
@@ -416,9 +414,7 @@ export default function BadgeDemo() {
   )
 }`,
 
-  breadcrumb: `import Link from "next/link"
-
-import {
+  breadcrumb: `import {
   Breadcrumb,
   BreadcrumbEllipsis,
   BreadcrumbItem,
@@ -440,7 +436,7 @@ export default function BreadcrumbDemo() {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/">Home</Link>
+            <a href="/">Home</a>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
@@ -460,7 +456,7 @@ export default function BreadcrumbDemo() {
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/docs/components">Components</Link>
+            <a href="/docs/components">Components</a>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
@@ -2011,7 +2007,6 @@ export default function MenubarDemo() {
   "navigation-menu": `"use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react"
 
 import { useIsMobile } from "@/components/hooks/use-mobile"
@@ -2118,7 +2113,7 @@ export default function NavigationMenuDemo() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/docs">Docs</Link>
+            <a href="/docs">Docs</a>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem className="hidden md:block">
@@ -2127,28 +2122,28 @@ export default function NavigationMenuDemo() {
             <ul className="grid w-[300px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
-                  <Link href="#">
+                  <a href="#">
                     <div className="font-medium">Components</div>
                     <div className="text-muted-foreground">
                       Browse all components in the library.
                     </div>
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">
+                  <a href="#">
                     <div className="font-medium">Documentation</div>
                     <div className="text-muted-foreground">
                       Learn how to use the library.
                     </div>
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">
+                  <a href="#">
                     <div className="font-medium">Blog</div>
                     <div className="text-muted-foreground">
                       Read our latest blog posts.
                     </div>
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
               </li>
             </ul>
@@ -2160,13 +2155,13 @@ export default function NavigationMenuDemo() {
             <ul className="grid w-[200px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
-                  <Link href="#">Components</Link>
+                  <a href="#">Components</a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">Documentation</Link>
+                  <a href="#">Documentation</a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#">Blocks</Link>
+                  <a href="#">Blocks</a>
                 </NavigationMenuLink>
               </li>
             </ul>
@@ -2178,22 +2173,22 @@ export default function NavigationMenuDemo() {
             <ul className="grid w-[200px] gap-4">
               <li>
                 <NavigationMenuLink asChild>
-                  <Link href="#" className="flex-row items-center gap-2">
+                  <a href="#" className="flex-row items-center gap-2">
                     <CircleHelpIcon />
                     Backlog
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#" className="flex-row items-center gap-2">
+                  <a href="#" className="flex-row items-center gap-2">
                     <CircleIcon />
                     To Do
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
-                  <Link href="#" className="flex-row items-center gap-2">
+                  <a href="#" className="flex-row items-center gap-2">
                     <CircleCheckIcon />
                     Done
-                  </Link>
+                  </a>
                 </NavigationMenuLink>
               </li>
             </ul>
@@ -2213,12 +2208,12 @@ function ListItem({
   return (
     <li {...props}>
       <NavigationMenuLink asChild>
-        <Link href={href}>
+        <a href={href}>
           <div className="text-sm leading-none font-medium">{title}</div>
           <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
             {children}
           </p>
-        </Link>
+        </a>
       </NavigationMenuLink>
     </li>
   )
@@ -2989,6 +2984,7 @@ export function getComponentDependencies(
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@tabler/icons-react": "^3.11.0",
     "class-variance-authority": "^0.7.1",
     clsx: "^2.1.1",
     cmdk: "^1.1.1",
