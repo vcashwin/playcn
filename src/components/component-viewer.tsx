@@ -56,7 +56,7 @@ import "./styles.css";
 import "./input.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`,
-        readOnly: true, // Read-only
+        readOnly: false, // Read-only
       },
 
       "/utils.ts": {
@@ -84,8 +84,7 @@ export default {
       },
 
       "/input.css": {
-        code: `
-:root {
+        code: `:root {
   --background: rgb(250, 245, 250);
   --foreground: rgb(80, 24, 84);
   --card: rgb(250, 245, 250);
