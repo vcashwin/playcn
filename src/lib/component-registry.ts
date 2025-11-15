@@ -2004,12 +2004,9 @@ export default function MenubarDemo() {
   )
 }`,
 
-  "navigation-menu": `"use client"
-
-import * as React from "react"
+  "navigation-menu": `import * as React from "react"
 import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react"
 
-import { useIsMobile } from "@/components/hooks/use-mobile"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -2059,7 +2056,7 @@ const components: { title: string; href: string; description: string }[] = [
 ]
 
 export default function NavigationMenuDemo() {
-  const isMobile = useIsMobile()
+  const isMobile = false;
 
   return (
     <NavigationMenu viewport={isMobile}>

@@ -6,7 +6,10 @@ import {
   SandboxCodeEditor,
   SandboxPreview,
 } from "@/components/kibo-ui/sandbox";
-import { useEffect, useState } from "react";
+import { useSandpack } from "@codesandbox/sandpack-react";
+import { useTheme } from "next-themes";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { set } from "react-hook-form";
 
 type ComponentViewerProps = {
   componentName: string;
@@ -26,6 +29,7 @@ export function ComponentViewer({
   const [files, setFiles] = useState<
     Record<string, { code: string; readOnly?: boolean }>
   >({});
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     // Transform component code to use relative imports instead of path aliases
@@ -139,7 +143,7 @@ export default {
   --spacing: 0.25rem;
 }
 
-.dark {
+.dark, [data-theme='dark'] {
   --background: rgb(34, 29, 39);
   --foreground: rgb(210, 196, 222);
   --card: rgb(44, 38, 50);
@@ -195,10 +199,26 @@ export default {
       },
 
       "/styles.css": {
-        code: `
-@tailwind base;
+        code: `@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --code-editor-background: #ffffff;
+  height: 100%;
+  background-color: var(--code-editor-background);
+}
+
+.dark, [data-theme='dark'] {
+  --code-editor-background: #151515;
+}
       `,
         readOnly: false,
       },
@@ -279,13 +299,13 @@ export default {
 };
 
         `,
-        readOnly: true, // Read-only
+        readOnly: false, // Read-only
       },
 
       "/index.html": {
         code: `
 <!DOCTYPE html>
-  <html lang="en">
+  <html lang="en"${resolvedTheme === "dark" ? ' class="dark"' : ""}>
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -297,12 +317,13 @@ export default {
     </body>
   </html>
   `,
-        readOnly: true, // Read-only
+        readOnly: false, // Read-only
       },
 
       "/package.json": {
         code: JSON.stringify(
           {
+            type: "module",
             scripts: {
               dev: "vite",
               build:
@@ -312,7 +333,7 @@ export default {
             dependencies: {
               react: "^19.0.0",
               "react-dom": "^19.0.0",
-              tailwindcss: "^3.4.17",
+              tailwindcss: "3.4.1",
               jiti: "^2.4.2",
               ...dependencies,
             },
@@ -322,7 +343,8 @@ export default {
               "@vitejs/plugin-react": "^3.1.0",
               typescript: "~4.9.3",
               vite: "4.2.0",
-              tailwindcss: "3.4.17",
+              tailwindcss: "3.4.1",
+              jiti: "^2.4.2",
               autoprefixer: "^10.4.22",
               postcss: "^8.5.6",
               "postcss-import": "^16.1.0",
@@ -365,20 +387,25 @@ export default {
   }
 
   return (
-    <SandboxProvider template="vite-react-ts" files={files}>
+    <SandboxProvider
+      template="vite-react-ts"
+      files={files}
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
+    >
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
           <div className="h-full flex flex-col">
             <div className="bg-secondary px-4 py-2 border-b">
-              <h3 className="text-sm font-medium">Code</h3>
+              <h3 className="text-sm font-medium text-foreground">Code</h3>
             </div>
             <div className="flex-1">
               <SandboxLayout>
+                <UpdateDarkMode />
                 <SandboxCodeEditor
                   showTabs
                   showLineNumbers
                   showInlineErrors
-                  className="h-full! pb-8 "
+                  className="h-full! pb-8"
                 />
               </SandboxLayout>
             </div>
@@ -387,7 +414,7 @@ export default {
         <div className="col-span-1">
           <div className="h-full flex flex-col">
             <div className="bg-secondary px-4 py-2 border-b">
-              <h3 className="text-sm font-medium">Preview</h3>
+              <h3 className="text-sm font-medium text-foreground">Preview</h3>
             </div>
             <div className="flex-1">
               <SandboxLayout>
@@ -403,4 +430,30 @@ export default {
       </div>
     </SandboxProvider>
   );
+}
+
+function UpdateDarkMode() {
+  const { resolvedTheme } = useTheme();
+  const { sandpack } = useSandpack();
+
+  useLayoutEffect(() => {
+    sandpack.updateFile(
+      "/index.html",
+      `<!DOCTYPE html>
+  <html lang="en"${resolvedTheme === "dark" ? ' class="dark"' : ""}>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Vite App</title>
+    </head>
+    <body>
+      <div id="root"></div>
+      <script type="module" src="/index.tsx"></script>
+    </body>
+  </html>
+  `
+    );
+  }, [resolvedTheme]);
+
+  return null;
 }

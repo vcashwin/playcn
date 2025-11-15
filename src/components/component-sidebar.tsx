@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export type Component = {
   name: string;
@@ -30,11 +31,11 @@ export function ComponentSidebar({
 
   return (
     <div className="flex h-screen w-64 flex-col border-r bg-background overflow-scroll">
-      <div className="p-4">
-        <h2 className="mb-2 text-lg font-semibold">Components</h2>
-        <p className="text-sm text-muted-foreground">
-          Browse and preview UI components
-        </p>
+      <div className="p-4 pb-2">
+        <div className="pb-2 flex items-center justify-between">
+          <h2 className="text-xl font-semibold mb-[0.5]">PlayCN</h2>
+          <ThemeSwitcher />
+        </div>
       </div>
       <Separator />
       <div className="p-4">
