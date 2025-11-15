@@ -313,6 +313,7 @@ export default {
               react: "^19.0.0",
               "react-dom": "^19.0.0",
               tailwindcss: "^3.4.17",
+              jiti: "^2.4.2",
               ...dependencies,
             },
             devDependencies: {
