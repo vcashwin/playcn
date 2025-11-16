@@ -26,14 +26,19 @@ function transformAbsoluteToRelativeImports(code: string): string {
     .replace(/@\/components\/ui\//g, "./");
 }
 
-const INDEX_TSX = `
-import React from "react";
+const INDEX_TSX = `import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { Toaster } from "./sonner"
 import "./styles.css";
 import "./theme.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-12"><App /></div>);`;
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <div className="w-full h-full p-12">
+    <App />
+    <Toaster />
+  </div>);
+`;
 
 const UTILS_TS = `
 import { clsx, type ClassValue } from "clsx"
@@ -177,13 +182,8 @@ body {
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --code-editor-background: #ffffff;
   height: 100%;
-  background-color: var(--code-editor-background);
-}
-
-.dark, [data-theme='dark'] {
-  --code-editor-background: #151515;
+  background-color: var(--background);
 }`;
 
 const TAILWIND_CONFIG_JS = `
@@ -276,9 +276,8 @@ export default defineConfig({
 })
 `;
 
-const getIndexHTML = (isDark: boolean) => `
-<!DOCTYPE html>
-  <html lang="en"${isDark ? ' class="dark"' : ""}>
+const getIndexHTML = () => `<!DOCTYPE html>
+  <html lang="en">
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -408,6 +407,14 @@ export function ComponentViewer() {
     const transformedComponentCode =
       transformAbsoluteToRelativeImports(componentCode);
 
+    // Find and extract sonner component
+    const sonnerComponent = allComponents.find(
+      (c) => c.fileName === "sonner.tsx"
+    );
+    const sonnerCode = sonnerComponent?.files["sonner"] || "";
+    const transformedSonnerCode =
+      transformAbsoluteToRelativeImports(sonnerCode);
+
     const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
       "/App.tsx": {
         code: transformedExampleCode,
@@ -419,11 +426,15 @@ export function ComponentViewer() {
       },
       ...INITIAL_FILES,
       "/index.html": {
-        code: getIndexHTML(resolvedTheme === "dark"),
+        code: getIndexHTML(),
         readOnly: false,
       },
       "/package.json": {
         code: getPackageJSON(ALL_DEPENDENCIES),
+        readOnly: true,
+      },
+      "/sonner.tsx": {
+        code: transformedSonnerCode,
         readOnly: true,
       },
     };
@@ -511,7 +522,6 @@ function UpdateFiles({
   activeComponent?: ComponentData;
   setIsLoading: (loading: boolean) => void;
 }) {
-  const { resolvedTheme } = useTheme();
   const { sandpack, listen } = useSandpack();
   const { refresh } = useSandpackNavigation();
 
@@ -584,11 +594,7 @@ function UpdateFiles({
     setTimeout(() => {
       refresh();
     }, 300);
-  }, [activeComponent, resolvedTheme]);
-
-  useEffect(() => {
-    sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));
-  }, [resolvedTheme]);
+  }, [activeComponent]);
 
   return null;
 }
