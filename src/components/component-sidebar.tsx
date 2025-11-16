@@ -30,7 +30,7 @@ export function ComponentSidebar({
 
   return (
     <div className="flex h-screen w-64 flex-col border-r bg-background overflow-hidden">
-      <div className="p-4 pb-2">
+      <div className="px-4 py-[19px]">
         <div className="pb-2 flex items-center justify-between">
           <h2 className="text-xl font-semibold mb-[0.5]">PlayCN</h2>
           <div className="flex items-center">
@@ -48,7 +48,7 @@ export function ComponentSidebar({
           className="h-9"
         />
       </div>
-      <ScrollArea className="flex-1 h-full">
+      <ScrollArea className="flex-1 h-[calc(100vh-2rem-2.25rem-1px-4rem)]">
         <div className="space-y-1 p-2">
           {filteredComponents.map((component) => (
             <button
@@ -65,13 +65,6 @@ export function ComponentSidebar({
           ))}
         </div>
       </ScrollArea>
-      <Separator />
-      <div className="p-4">
-        <p className="text-xs text-muted-foreground">
-          {filteredComponents.length} component
-          {filteredComponents.length !== 1 ? "s" : ""}
-        </p>
-      </div>
     </div>
   );
 }

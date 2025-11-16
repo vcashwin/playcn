@@ -321,6 +321,10 @@ const getPackageJSON = (dependencies: Record<string, string>) =>
   );
 
 const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
+  "/theme.css": {
+    code: THEME_CSS,
+    readOnly: false,
+  },
   "/index.tsx": {
     code: INDEX_TSX,
     readOnly: false,
@@ -332,10 +336,6 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
   "/postcss.config.js": {
     code: POSTCSS_CONFIG_JS,
     readOnly: true,
-  },
-  "/theme.css": {
-    code: THEME_CSS,
-    readOnly: false,
   },
   "/styles.css": {
     code: STYLES_CSS,
@@ -383,6 +383,7 @@ export function ComponentViewer() {
         code: transformedComponentCode,
         readOnly: false,
       },
+      ...INITIAL_FILES,
       "/index.html": {
         code: getIndexHTML(resolvedTheme === "dark"),
         readOnly: false,
@@ -391,7 +392,6 @@ export function ComponentViewer() {
         code: getPackageJSON(ALL_DEPENDENCIES),
         readOnly: true,
       },
-      ...INITIAL_FILES,
     };
 
     for (const [fileName, code] of Object.entries(componentFiles)) {
