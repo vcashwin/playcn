@@ -5,6 +5,7 @@ import {
   SandboxLayout,
   SandboxCodeEditor,
   SandboxPreview,
+  SandboxConsole,
 } from "@/components/kibo-ui/sandbox";
 import { ComponentData, useComponents } from "@/hooks/use-components";
 import { useActiveComponent } from "@/stores/use-active-component";
@@ -13,7 +14,7 @@ import {
   useSandpackNavigation,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useLayoutEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { ALL_DEPENDENCIES } from "@/lib/component-registry";
 
 function transformAbsoluteToRelativeImports(code: string): string {
@@ -253,6 +254,20 @@ export default {
 };
 `;
 
+const getViteConfigTS = (
+  dependencies: Record<string, string>
+) => `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    disabled: true,
+  },
+})
+  `;
+
 const getIndexHTML = (isDark: boolean) => `
 <!DOCTYPE html>
   <html lang="en"${isDark ? ' class="dark"' : ""}>
@@ -274,8 +289,7 @@ const getPackageJSON = (dependencies: Record<string, string>) =>
       type: "module",
       scripts: {
         dev: "vite",
-        build:
-          "npx tailwindcss -i ./index.css -o ./output.css && tsc && vite build",
+        build: "tsc && vite build",
         preview: "vite preview",
       },
       dependencies: {
@@ -335,6 +349,9 @@ export function ComponentViewer() {
   const { activeComponentName } = useActiveComponent();
   const { data: allComponents = [] } = useComponents();
   const { resolvedTheme } = useTheme();
+  const [initialFiles, setInitialFiles] = useState<
+    Record<string, { code: string; readOnly?: boolean }>
+  >({});
 
   const activeComponent = useMemo(() => {
     return allComponents.find(
@@ -342,25 +359,17 @@ export function ComponentViewer() {
     ) as ComponentData;
   }, [allComponents, activeComponentName]);
 
-  const files = useMemo(() => {
-    if (!activeComponent) return {};
+  // Setup all files once on mount
+  useEffect(() => {
+    if (allComponents.length === 0 || !activeComponent) return;
 
-    const { fileName, exampleCode, files: componentFiles } = activeComponent;
-    const componentName = fileName.replace(".tsx", "");
-    const componentCode = componentFiles[componentName] || "";
-
-    const transformedExampleCode =
-      transformAbsoluteToRelativeImports(exampleCode);
-    const transformedComponentCode =
-      transformAbsoluteToRelativeImports(componentCode);
+    const transformedExampleCode = transformAbsoluteToRelativeImports(
+      activeComponent.exampleCode
+    );
 
     const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
       "/App.tsx": {
         code: transformedExampleCode,
-        readOnly: false,
-      },
-      [`/${componentName}.tsx`]: {
-        code: transformedComponentCode,
         readOnly: false,
       },
       "/index.html": {
@@ -371,24 +380,29 @@ export function ComponentViewer() {
         code: getPackageJSON(ALL_DEPENDENCIES),
         readOnly: true,
       },
+      "/vite.config.ts": {
+        code: getViteConfigTS(ALL_DEPENDENCIES),
+        readOnly: false,
+      },
       ...INITIAL_FILES,
     };
 
-    for (const [fileName, code] of Object.entries(componentFiles)) {
-      if (fileName === componentName) continue;
+    for (const component of allComponents) {
+      const componentName = component.fileName.replace(".tsx", "");
+      const transformedCode = transformAbsoluteToRelativeImports(
+        component.code
+      );
 
-      const transformedCode = transformAbsoluteToRelativeImports(code);
-
-      setupFiles[`/${fileName}.tsx`] = {
+      setupFiles[`/${componentName}.tsx`] = {
         code: transformedCode,
         readOnly: false,
       };
     }
 
-    return setupFiles;
-  }, [activeComponent, resolvedTheme]);
+    setInitialFiles(setupFiles);
+  }, [allComponents]);
 
-  if (Object.keys(files).length === 0) {
+  if (Object.keys(initialFiles).length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">Loading component...</p>
@@ -399,7 +413,7 @@ export function ComponentViewer() {
   return (
     <SandboxProvider
       template="vite-react-ts"
-      files={files}
+      files={initialFiles}
       theme={resolvedTheme === "dark" ? "dark" : "light"}
     >
       <div className="h-screen grid grid-cols-2">
@@ -410,7 +424,8 @@ export function ComponentViewer() {
             </div>
             <div className="flex-1">
               <SandboxLayout>
-                <UpdateDarkMode files={files} />
+                <UpdateActiveComponent />
+                <UpdateDarkMode />
                 <SandboxCodeEditor
                   showTabs
                   showLineNumbers
@@ -427,13 +442,18 @@ export function ComponentViewer() {
               <h3 className="text-sm font-medium text-foreground">Preview</h3>
             </div>
             <div className="flex-1">
-              <SandboxLayout>
-                <SandboxPreview
-                  showOpenInCodeSandbox={false}
-                  showRefreshButton
-                  className="h-full! p-8"
-                />
-              </SandboxLayout>
+              <div className="flex flex-col h-full">
+                <SandboxLayout>
+                  <SandboxPreview
+                    showOpenInCodeSandbox={false}
+                    showRefreshButton
+                    className="h-full! p-8"
+                  />
+                </SandboxLayout>
+                <SandboxLayout>
+                  <SandboxConsole className="h-64!" />
+                </SandboxLayout>
+              </div>
             </div>
           </div>
         </div>
@@ -442,25 +462,40 @@ export function ComponentViewer() {
   );
 }
 
-function UpdateDarkMode({
-  files,
-}: {
-  files: Record<string, { code: string; readOnly?: boolean }>;
-}) {
-  const { resolvedTheme } = useTheme();
+function UpdateActiveComponent() {
+  const { activeComponentName } = useActiveComponent();
+  const { data: allComponents = [] } = useComponents();
   const { sandpack } = useSandpack();
-  const { refresh } = useSandpackNavigation();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      refresh();
-    }, 300);
+    console.log("running update active component hook");
+    const activeComponent = allComponents.find(
+      (c) => c.fileName === activeComponentName
+    );
 
-    return () => clearTimeout(timeout);
-  }, [files, refresh]);
+    if (!activeComponent) return;
 
-  useLayoutEffect(() => {
-    sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));
+    const transformedExampleCode = transformAbsoluteToRelativeImports(
+      activeComponent.exampleCode
+    );
+
+    sandpack.updateFile("/App.tsx", transformedExampleCode, true);
+  }, [activeComponentName, allComponents]);
+
+  return null;
+}
+
+function UpdateDarkMode() {
+  const { resolvedTheme } = useTheme();
+  const { sandpack } = useSandpack();
+
+  useEffect(() => {
+    console.log("running update dark mode hook");
+    sandpack.updateFile(
+      "/index.html",
+      getIndexHTML(resolvedTheme === "dark"),
+      true
+    );
   }, [resolvedTheme]);
 
   return null;

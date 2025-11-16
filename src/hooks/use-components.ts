@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 export type ComponentData = {
   name: string;
   fileName: string;
-  files: Record<string, string>;
+  code: string;
   exampleCode: string;
 };
 
