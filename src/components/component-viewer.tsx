@@ -451,19 +451,13 @@ export function ComponentViewer() {
               <h3 className="text-sm font-medium text-foreground">Preview</h3>
             </div>
             <div className="flex-1">
-              <div className="flex flex-col h-full">
-                <SandboxLayout>
-                  <SandboxPreview
-                    showOpenInCodeSandbox={false}
-                    showRefreshButton
-                    className="h-full! p-8"
-                  />
-                </SandboxLayout>
-
-                <SandboxLayout>
-                  <SandboxConsole className="h-64!" />
-                </SandboxLayout>
-              </div>
+              <SandboxLayout>
+                <SandboxPreview
+                  showOpenInCodeSandbox={false}
+                  showRefreshButton
+                  className="h-full! p-8"
+                />
+              </SandboxLayout>
             </div>
           </div>
         </div>
