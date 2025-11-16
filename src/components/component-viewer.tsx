@@ -30,7 +30,7 @@ import App from "./App";
 import "./styles.css";
 import "./input.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`;
+ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-8"><App /></div>);`;
 
 const UTILS_TS = `
 import { clsx, type ClassValue } from "clsx"
@@ -455,7 +455,7 @@ export function ComponentViewer() {
                 <SandboxPreview
                   showOpenInCodeSandbox={false}
                   showRefreshButton
-                  className="h-full! p-8"
+                  className="h-full!"
                 />
               </SandboxLayout>
             </div>
