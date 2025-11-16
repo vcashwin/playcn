@@ -8,8 +8,7 @@ import {
 } from "@/components/kibo-ui/sandbox";
 import { useSandpack } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { set } from "react-hook-form";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 type ComponentViewerProps = {
   componentName: string;

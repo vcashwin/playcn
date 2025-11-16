@@ -30,7 +30,7 @@ export function ComponentSidebar({
   );
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-background overflow-scroll">
+    <div className="flex h-screen w-64 flex-col border-r bg-background overflow-hidden">
       <div className="p-4 pb-2">
         <div className="pb-2 flex items-center justify-between">
           <h2 className="text-xl font-semibold mb-[0.5]">PlayCN</h2>
@@ -46,7 +46,7 @@ export function ComponentSidebar({
           className="h-9"
         />
       </div>
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 h-full">
         <div className="space-y-1 p-2">
           {filteredComponents.map((component) => (
             <button

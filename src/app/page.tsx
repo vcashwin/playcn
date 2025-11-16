@@ -68,7 +68,7 @@ export default function Home() {
     loadComponentCode();
   }, [selectedComponent]);
 
-  if (components.length === 0) {
+  if (components.length === 0 || selectedComponent === null) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
