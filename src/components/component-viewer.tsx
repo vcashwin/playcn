@@ -407,7 +407,7 @@ export function ComponentViewer() {
     }
 
     return setupFiles;
-  }, [activeComponent]);
+  }, []);
 
   if (Object.keys(files).length === 0) {
     return (
@@ -426,6 +426,7 @@ export function ComponentViewer() {
         initMode: "immediate",
       }}
     >
+      <UpdateFiles activeComponent={activeComponent} />
       <ThemeCommandPalette />
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
@@ -435,7 +436,6 @@ export function ComponentViewer() {
             </div>
             <div className="flex-1">
               <SandboxLayout>
-                <UpdateDarkMode files={files} />
                 <SandboxCodeEditor
                   showTabs
                   showLineNumbers
@@ -467,22 +467,43 @@ export function ComponentViewer() {
   );
 }
 
-function UpdateDarkMode({
-  files,
-}: {
-  files: Record<string, { code: string; readOnly?: boolean }>;
-}) {
+function UpdateFiles({ activeComponent }: { activeComponent?: ComponentData }) {
   const { resolvedTheme } = useTheme();
   const { sandpack } = useSandpack();
   const { refresh } = useSandpackNavigation();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    if (!activeComponent) return;
+
+    const { fileName, exampleCode, files: componentFiles } = activeComponent;
+    const componentName = fileName.replace(".tsx", "");
+    const componentCode = componentFiles[componentName] || "";
+
+    const transformedExampleCode =
+      transformAbsoluteToRelativeImports(exampleCode);
+    const transformedComponentCode =
+      transformAbsoluteToRelativeImports(componentCode);
+
+    const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
+      ...sandpack.files,
+      "/App.tsx": { code: transformedExampleCode },
+      [`/${componentName}.tsx`]: { code: transformedComponentCode },
+    };
+
+    for (const [fileName, code] of Object.entries(componentFiles)) {
+      if (fileName === componentName) continue;
+
+      const transformedCode = transformAbsoluteToRelativeImports(code);
+
+      setupFiles[`/${fileName}.tsx`] = { code: transformedCode };
+    }
+
+    sandpack.updateFile(setupFiles);
+
+    setTimeout(() => {
       refresh();
     }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [files, refresh]);
+  }, [activeComponent, resolvedTheme]);
 
   useEffect(() => {
     sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));

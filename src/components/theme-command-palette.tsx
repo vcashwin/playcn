@@ -14,6 +14,7 @@ import {
 import { defaultPresets, ThemePreset } from "@/lib/theme-presets";
 import { ExternalLinkIcon, Palette, Plus } from "lucide-react";
 import { useSandpack } from "@codesandbox/sandpack-react";
+import { useTheme } from "next-themes";
 
 function convertThemeToVariables(theme: ThemePreset) {
   const cssVariables = `:root {
@@ -29,9 +30,24 @@ function convertThemeToVariables(theme: ThemePreset) {
   return cssVariables;
 }
 
+function ColorPalette({ colors, id }: { colors: string[]; id: string }) {
+  return (
+    <div className="flex flex-wrap gap-0.5">
+      {colors.map((color, index) => (
+        <div
+          key={`${id}-${color}-${index}`}
+          className="border-muted h-3 w-3 rounded-sm border"
+          style={{ backgroundColor: color }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function ThemeCommandPalette() {
   const [open, setOpen] = useState(false);
   const { sandpack } = useSandpack();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -94,7 +110,22 @@ export function ThemeCommandPalette() {
               value={theme.id}
               onSelect={() => handleThemeSelect(theme.id)}
             >
-              <Palette className="mr-2 h-4 w-4" />
+              <ColorPalette
+                id={theme.id}
+                colors={
+                  resolvedTheme === "dark"
+                    ? [
+                        defaultPresets[theme.id].styles.dark.primary,
+                        defaultPresets[theme.id].styles.dark.secondary,
+                        defaultPresets[theme.id].styles.dark.accent,
+                      ]
+                    : [
+                        defaultPresets[theme.id].styles.light.primary,
+                        defaultPresets[theme.id].styles.light.secondary,
+                        defaultPresets[theme.id].styles.light.accent,
+                      ]
+                }
+              />
               <span>{theme.label}</span>
             </CommandItem>
           ))}
