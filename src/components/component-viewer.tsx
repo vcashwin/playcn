@@ -28,9 +28,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
-import "./input.css";
+import "./theme.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`;
+ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-12"><App /></div>);`;
 
 const UTILS_TS = `
 import { clsx, type ClassValue } from "clsx"
@@ -50,7 +50,7 @@ export default {
 }
 `;
 
-const INPUT_CSS = `:root {
+const THEME_CSS = `:root {
   --background: rgb(250, 245, 250);
   --foreground: rgb(80, 24, 84);
   --card: rgb(250, 245, 250);
@@ -259,14 +259,15 @@ const getViteConfigTS = (
 ) => `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    disabled: true,
+    include: [${Object.keys(dependencies)
+      .map((dep) => `"${dep}"`)
+      .join(",")}]
   },
 })
-  `;
+`;
 
 const getIndexHTML = (isDark: boolean) => `
 <!DOCTYPE html>
@@ -331,8 +332,8 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
     code: POSTCSS_CONFIG_JS,
     readOnly: true,
   },
-  "/input.css": {
-    code: INPUT_CSS,
+  "/theme.css": {
+    code: THEME_CSS,
     readOnly: false,
   },
   "/styles.css": {
@@ -341,6 +342,10 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
   },
   "/tailwind.config.js": {
     code: TAILWIND_CONFIG_JS,
+    readOnly: false,
+  },
+  "/vite.config.ts": {
+    code: getViteConfigTS(ALL_DEPENDENCIES),
     readOnly: false,
   },
 };
@@ -415,6 +420,9 @@ export function ComponentViewer() {
       template="vite-react-ts"
       files={initialFiles}
       theme={resolvedTheme === "dark" ? "dark" : "light"}
+      options={{
+        initMode: "immediate",
+      }}
     >
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
