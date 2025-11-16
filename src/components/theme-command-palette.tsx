@@ -17,13 +17,16 @@ import { useSandpack } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
 
 function convertThemeToVariables(theme: ThemePreset) {
+  const fontKeys = ["font-sans", "font-serif", "font-mono"];
   const cssVariables = `:root {
     ${Object.entries(theme.styles.light)
+      .filter(([key]) => !fontKeys.includes(key))
       .map(([key, value]) => `--${key}: ${value};`)
       .join("\n")}
   }
   .dark, [data-theme='dark'] {
     ${Object.entries(theme.styles.dark)
+      .filter(([key]) => !fontKeys.includes(key))
       .map(([key, value]) => `--${key}: ${value};`)
       .join("\n")}
   }`;

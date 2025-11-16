@@ -173,6 +173,9 @@ body {
 }
 
 :root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --code-editor-background: #ffffff;
   height: 100%;
   background-color: var(--code-editor-background);
@@ -538,21 +541,44 @@ function UpdateFiles({
     const transformedComponentCode =
       transformAbsoluteToRelativeImports(componentCode);
 
-    const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
-      ...sandpack.files,
-      "/App.tsx": { code: transformedExampleCode },
-      [`/${componentName}.tsx`]: { code: transformedComponentCode },
-    };
+    // Get all current .tsx files (component files) to remove
+    const currentTsxFiles = Object.keys(sandpack.files).filter(
+      (file) =>
+        file.endsWith(".tsx") && file !== "/index.tsx" && file !== "/App.tsx"
+    );
 
+    // Delete old component files
+    for (const file of currentTsxFiles) {
+      sandpack.deleteFile(file);
+    }
+
+    // Close all files except the first one in the array (App.tsx) to maintain the desired order of visible files
+    for (const file of sandpack.visibleFiles) {
+      if (file !== sandpack.visibleFiles[0]) {
+        sandpack.closeFile(file);
+      }
+    }
+
+    // Update App.tsx and add new component files
+    sandpack.updateFile(`/${componentName}.tsx`, transformedComponentCode);
+    sandpack.openFile(`/${componentName}.tsx`);
+
+    // Add other component files
     for (const [fileName, code] of Object.entries(componentFiles)) {
       if (fileName === componentName) continue;
 
       const transformedCode = transformAbsoluteToRelativeImports(code);
-
-      setupFiles[`/${fileName}.tsx`] = { code: transformedCode };
+      sandpack.updateFile(`/${fileName}.tsx`, transformedCode);
+      sandpack.openFile(`/${fileName}.tsx`);
     }
 
-    sandpack.updateFile(setupFiles);
+    // open inital files too
+    for (const file of Object.keys(INITIAL_FILES)) {
+      sandpack.openFile(file);
+    }
+
+    sandpack.updateFile("/App.tsx", transformedExampleCode, true);
+    sandpack.setActiveFile(`/App.tsx`);
 
     setTimeout(() => {
       refresh();
