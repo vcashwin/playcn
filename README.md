@@ -1,7 +1,7 @@
 ## PlayCN
 
-Playground to customize your own design system on top of ShadCN UI. Built using Sandpack, React and TailwindCSS.
+Clean Playground to customize your own design system on top of ShadCN UI.
 
-NOTE: Currently it takes ~15-20 seconds for the sandpack to initialize. Check this space for more updates on improved performance over the coming days.
+Built using Sandpack, React and TailwindCSS.
 
 [Try now](https://playcn.vercel.app/)

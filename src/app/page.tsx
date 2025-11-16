@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { ComponentSidebar } from "@/components/component-sidebar";
 import { ComponentViewer } from "@/components/component-viewer";
 import { useComponents } from "@/hooks/use-components";

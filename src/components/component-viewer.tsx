@@ -16,6 +16,7 @@ import {
 import { useTheme } from "next-themes";
 import { useEffect, useMemo } from "react";
 import { ALL_DEPENDENCIES } from "@/lib/component-registry";
+import { ThemeCommandPalette } from "./theme-command-palette";
 
 function transformAbsoluteToRelativeImports(code: string): string {
   return code
@@ -425,6 +426,7 @@ export function ComponentViewer() {
         initMode: "immediate",
       }}
     >
+      <ThemeCommandPalette />
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
           <div className="h-full flex flex-col">
