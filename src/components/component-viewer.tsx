@@ -28,7 +28,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
-import "./input.css";
+import "./theme.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-12"><App /></div>);`;
 
@@ -50,7 +50,7 @@ export default {
 }
 `;
 
-const INPUT_CSS = `:root {
+const THEME_CSS = `:root {
   --background: rgb(250, 245, 250);
   --foreground: rgb(80, 24, 84);
   --card: rgb(250, 245, 250);
@@ -333,8 +333,8 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
     code: POSTCSS_CONFIG_JS,
     readOnly: true,
   },
-  "/input.css": {
-    code: INPUT_CSS,
+  "/theme.css": {
+    code: THEME_CSS,
     readOnly: false,
   },
   "/styles.css": {
@@ -438,7 +438,6 @@ export function ComponentViewer() {
                   showTabs
                   showLineNumbers
                   showInlineErrors
-                  wrapContent
                   className="h-full! pb-8"
                 />
               </SandboxLayout>
