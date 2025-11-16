@@ -469,8 +469,20 @@ export function ComponentViewer() {
 
 function UpdateFiles({ activeComponent }: { activeComponent?: ComponentData }) {
   const { resolvedTheme } = useTheme();
-  const { sandpack } = useSandpack();
+  const { sandpack, listen } = useSandpack();
   const { refresh } = useSandpackNavigation();
+
+  useEffect(() => {
+    const unsubscribe = listen((message) => {
+      console.log(message);
+      if (message.type === "done" && message.compilatonError === false) {
+        // DOM has rendered successfully, trigger your refresh here
+        refresh();
+      }
+    });
+
+    return unsubscribe;
+  }, [listen]);
 
   useEffect(() => {
     if (!activeComponent) return;
