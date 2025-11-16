@@ -6,88 +6,50 @@ import {
   SandboxCodeEditor,
   SandboxPreview,
 } from "@/components/kibo-ui/sandbox";
-import { useSandpack } from "@codesandbox/sandpack-react";
+import { ComponentData, useComponents } from "@/hooks/use-components";
+import { useActiveComponent } from "@/stores/use-active-component";
+import {
+  useSandpack,
+  useSandpackNavigation,
+} from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo } from "react";
+import { ALL_DEPENDENCIES } from "@/lib/component-registry";
 
-type ComponentViewerProps = {
-  componentName: string;
-  componentCode: string;
-  componentFiles: Record<string, string>;
-  exampleCode: string;
-  dependencies: Record<string, string>;
-};
+function transformAbsoluteToRelativeImports(code: string): string {
+  return code
+    .replace(/@\/lib\/utils/g, "./utils")
+    .replace(/@\/components\/ui\//g, "./");
+}
 
-export function ComponentViewer({
-  componentName,
-  componentCode,
-  componentFiles,
-  exampleCode,
-  dependencies,
-}: ComponentViewerProps) {
-  const [files, setFiles] = useState<
-    Record<string, { code: string; readOnly?: boolean }>
-  >({});
-  const { resolvedTheme } = useTheme();
-
-  useEffect(() => {
-    // Transform component code to use relative imports instead of path aliases
-    const transformedComponentCode = componentCode
-      .replace(/@\/lib\/utils/g, "./utils")
-      .replace(/@\/components\/ui\//g, "./");
-
-    // Transform example code to use relative imports
-    const transformedExampleCode = exampleCode
-      .replace(/@\/lib\/utils/g, "./utils")
-      .replace(/@\/components\/ui\//g, "./");
-
-    const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
-      "/App.tsx": {
-        code: transformedExampleCode,
-        readOnly: false, // Editable
-      },
-      [`/${componentName}.tsx`]: {
-        code: transformedComponentCode,
-        readOnly: false, // Editable
-      },
-      "/index.tsx": {
-        code: `
+const INDEX_TSX = `
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
 import "./input.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`,
-        readOnly: false, // Read-only
-      },
+ReactDOM.createRoot(document.getElementById("root")!).render(<App />);`;
 
-      "/utils.ts": {
-        code: `
+const UTILS_TS = `
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-`,
-        readOnly: true, // Read-only
-      },
+`;
 
-      "/postcss.config.js": {
-        code: `
+const POSTCSS_CONFIG_JS = `
 export default {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
   },
 }
-`,
-        readOnly: true, // Read-only
-      },
+`;
 
-      "/input.css": {
-        code: `:root {
+const INPUT_CSS = `:root {
   --background: rgb(250, 245, 250);
   --foreground: rgb(80, 24, 84);
   --card: rgb(250, 245, 250);
@@ -193,12 +155,9 @@ export default {
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-}
-        `,
-      },
+}`;
 
-      "/styles.css": {
-        code: `@tailwind base;
+const STYLES_CSS = `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -217,13 +176,9 @@ body {
 
 .dark, [data-theme='dark'] {
   --code-editor-background: #151515;
-}
-      `,
-        readOnly: false,
-      },
+}`;
 
-      "/tailwind.config.js": {
-        code: `
+const TAILWIND_CONFIG_JS = `
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -296,15 +251,11 @@ export default {
     },
   },
 };
+`;
 
-        `,
-        readOnly: false, // Read-only
-      },
-
-      "/index.html": {
-        code: `
+const getIndexHTML = (isDark: boolean) => `
 <!DOCTYPE html>
-  <html lang="en"${resolvedTheme === "dark" ? ' class="dark"' : ""}>
+  <html lang="en"${isDark ? ' class="dark"' : ""}>
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -315,67 +266,127 @@ export default {
       <script type="module" src="/index.tsx"></script>
     </body>
   </html>
-  `,
-        readOnly: false, // Read-only
-      },
+  `;
 
-      "/package.json": {
-        code: JSON.stringify(
-          {
-            type: "module",
-            scripts: {
-              dev: "vite",
-              build:
-                "npx tailwindcss -i ./index.css -o ./output.css && tsc && vite build",
-              preview: "vite preview",
-            },
-            dependencies: {
-              react: "^19.0.0",
-              "react-dom": "^19.0.0",
-              tailwindcss: "3.4.1",
-              jiti: "^2.4.2",
-              ...dependencies,
-            },
-            devDependencies: {
-              "@types/react": "^19.0.8",
-              "@types/react-dom": "^19.0.3",
-              "@vitejs/plugin-react": "^3.1.0",
-              typescript: "~4.9.3",
-              vite: "4.2.0",
-              tailwindcss: "3.4.1",
-              jiti: "^2.4.2",
-              autoprefixer: "^10.4.22",
-              postcss: "^8.5.6",
-              "postcss-import": "^16.1.0",
-              "postcss-nested": "^7.0.2",
-              "esbuild-wasm": "^0.17.12",
-            },
-          },
-          null,
-          2
-        ),
-        readOnly: true, // Read-only
+const getPackageJSON = (dependencies: Record<string, string>) =>
+  JSON.stringify(
+    {
+      type: "module",
+      scripts: {
+        dev: "vite",
+        build:
+          "npx tailwindcss -i ./index.css -o ./output.css && tsc && vite build",
+        preview: "vite preview",
       },
+      dependencies: {
+        react: "^19.0.0",
+        "react-dom": "^19.0.0",
+        tailwindcss: "3.4.1",
+        jiti: "^2.4.2",
+        ...dependencies,
+      },
+      devDependencies: {
+        "@types/react": "^19.0.8",
+        "@types/react-dom": "^19.0.3",
+        "@vitejs/plugin-react": "^3.1.0",
+        typescript: "~4.9.3",
+        vite: "4.2.0",
+        tailwindcss: "3.4.1",
+        jiti: "^2.4.2",
+        autoprefixer: "^10.4.22",
+        postcss: "^8.5.6",
+        "postcss-import": "^16.1.0",
+        "postcss-nested": "^7.0.2",
+        "esbuild-wasm": "^0.17.12",
+      },
+    },
+    null,
+    2
+  );
+
+const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
+  "/index.tsx": {
+    code: INDEX_TSX,
+    readOnly: false,
+  },
+  "/utils.ts": {
+    code: UTILS_TS,
+    readOnly: true,
+  },
+  "/postcss.config.js": {
+    code: POSTCSS_CONFIG_JS,
+    readOnly: true,
+  },
+  "/input.css": {
+    code: INPUT_CSS,
+    readOnly: false,
+  },
+  "/styles.css": {
+    code: STYLES_CSS,
+    readOnly: false,
+  },
+  "/tailwind.config.js": {
+    code: TAILWIND_CONFIG_JS,
+    readOnly: false,
+  },
+};
+
+export function ComponentViewer() {
+  const { activeComponentName } = useActiveComponent();
+  const { data: allComponents = [] } = useComponents();
+  const { resolvedTheme } = useTheme();
+
+  const activeComponent = useMemo(() => {
+    return allComponents.find(
+      (c) => c.fileName === activeComponentName
+    ) as ComponentData;
+  }, [allComponents, activeComponentName]);
+
+  const files = useMemo(() => {
+    if (!activeComponent) return {};
+
+    const { fileName, exampleCode, files: componentFiles } = activeComponent;
+    const componentName = fileName.replace(".tsx", "");
+    const componentCode = componentFiles[componentName] || "";
+
+    const transformedExampleCode =
+      transformAbsoluteToRelativeImports(exampleCode);
+    const transformedComponentCode =
+      transformAbsoluteToRelativeImports(componentCode);
+
+    const setupFiles: Record<string, { code: string; readOnly?: boolean }> = {
+      "/App.tsx": {
+        code: transformedExampleCode,
+        readOnly: false,
+      },
+      [`/${componentName}.tsx`]: {
+        code: transformedComponentCode,
+        readOnly: false,
+      },
+      "/index.html": {
+        code: getIndexHTML(resolvedTheme === "dark"),
+        readOnly: false,
+      },
+      "/package.json": {
+        code: getPackageJSON(ALL_DEPENDENCIES),
+        readOnly: true,
+      },
+      ...INITIAL_FILES,
     };
 
-    // Add all dependency files from componentFiles
     for (const [fileName, code] of Object.entries(componentFiles)) {
-      // Skip the main component as it's already added
       if (fileName === componentName) continue;
 
-      // Transform the dependency code to use relative imports
-      const transformedCode = code
-        .replace(/@\/lib\/utils/g, "./utils")
-        .replace(/@\/components\/ui\//g, "./");
+      const transformedCode = transformAbsoluteToRelativeImports(code);
 
       setupFiles[`/${fileName}.tsx`] = {
         code: transformedCode,
-        readOnly: false, // Component files are editable
+        readOnly: false,
       };
     }
 
-    setFiles(setupFiles);
-  }, [componentName, componentCode, componentFiles, exampleCode]);
+    return setupFiles;
+  }, [activeComponent, resolvedTheme]);
 
   if (Object.keys(files).length === 0) {
     return (
@@ -399,7 +410,7 @@ export default {
             </div>
             <div className="flex-1">
               <SandboxLayout>
-                <UpdateDarkMode />
+                <UpdateDarkMode files={files} />
                 <SandboxCodeEditor
                   showTabs
                   showLineNumbers
@@ -431,27 +442,25 @@ export default {
   );
 }
 
-function UpdateDarkMode() {
+function UpdateDarkMode({
+  files,
+}: {
+  files: Record<string, { code: string; readOnly?: boolean }>;
+}) {
   const { resolvedTheme } = useTheme();
   const { sandpack } = useSandpack();
+  const { refresh } = useSandpackNavigation();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      refresh();
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [files, refresh]);
 
   useLayoutEffect(() => {
-    sandpack.updateFile(
-      "/index.html",
-      `<!DOCTYPE html>
-  <html lang="en"${resolvedTheme === "dark" ? ' class="dark"' : ""}>
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Vite App</title>
-    </head>
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/index.tsx"></script>
-    </body>
-  </html>
-  `
-    );
+    sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));
   }, [resolvedTheme]);
 
   return null;

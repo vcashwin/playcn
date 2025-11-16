@@ -1,74 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ComponentSidebar } from "@/components/component-sidebar";
 import { ComponentViewer } from "@/components/component-viewer";
-import {
-  getComponentExample,
-  getComponentDependencies,
-} from "@/lib/component-registry";
-
-type Component = {
-  name: string;
-  fileName: string;
-};
+import { useComponents } from "@/hooks/use-components";
+import { useActiveComponent } from "@/stores/use-active-component";
 
 export default function Home() {
-  const [components, setComponents] = useState<Component[]>([]);
-  const [selectedComponent, setSelectedComponent] = useState<string | null>(
-    null
-  );
-  const [componentCode, setComponentCode] = useState<string>("");
-  const [componentFiles, setComponentFiles] = useState<Record<string, string>>(
-    {}
-  );
-  const [loading, setLoading] = useState(false);
+  const { data: allComponents = [], isLoading } = useComponents();
+  const { activeComponentName, setActiveComponentName } = useActiveComponent();
 
-  // Load the list of components
   useEffect(() => {
-    async function loadComponents() {
-      try {
-        const response = await fetch("/api/components");
-        const data = await response.json();
-        setComponents(data.components);
-        if (data.components.length > 0) {
-          setSelectedComponent(data.components[0].fileName);
-        }
-      } catch (error) {
-        console.error("Failed to load components:", error);
-      }
+    if (allComponents.length > 0 && !activeComponentName) {
+      setActiveComponentName(allComponents[0].fileName);
     }
-    loadComponents();
-  }, []);
+  }, [allComponents, activeComponentName, setActiveComponentName]);
 
-  // Load selected component code
-  useEffect(() => {
-    if (!selectedComponent) return;
-
-    async function loadComponentCode() {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/components/${selectedComponent}`);
-        const data = await response.json();
-
-        // The API now returns all files (main component + dependencies)
-        setComponentFiles(data.files || {});
-
-        // Extract the main component code (without .tsx extension)
-        if (selectedComponent) {
-          const mainComponentKey = selectedComponent.replace(".tsx", "");
-          setComponentCode(data.files?.[mainComponentKey] || "");
-        }
-      } catch (error) {
-        console.error("Failed to load component code:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadComponentCode();
-  }, [selectedComponent]);
-
-  if (components.length === 0 || selectedComponent === null) {
+  if (isLoading || allComponents.length === 0 || !activeComponentName) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
@@ -84,34 +32,12 @@ export default function Home() {
   return (
     <div className="flex h-screen overflow-hidden">
       <ComponentSidebar
-        components={components}
-        selectedComponent={selectedComponent}
-        onSelectComponent={setSelectedComponent}
+        components={allComponents}
+        selectedComponent={activeComponentName}
+        onSelectComponent={setActiveComponentName}
       />
       <div className="flex-1 overflow-hidden">
-        {loading ? (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">Loading component...</p>
-          </div>
-        ) : selectedComponent && componentCode ? (
-          <ComponentViewer
-            componentName={selectedComponent.replace(".tsx", "")}
-            componentCode={componentCode}
-            componentFiles={componentFiles}
-            exampleCode={getComponentExample(
-              selectedComponent.replace(".tsx", "")
-            )}
-            dependencies={getComponentDependencies(
-              selectedComponent.replace(".tsx", "")
-            )}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">
-              Select a component to preview
-            </p>
-          </div>
-        )}
+        <ComponentViewer />
       </div>
     </div>
   );
