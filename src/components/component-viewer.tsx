@@ -14,9 +14,11 @@ import {
   useSandpackNavigation,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ALL_DEPENDENCIES } from "@/lib/component-registry";
 import { ThemeCommandPalette } from "./theme-command-palette";
+import { TextLoop } from "@/components/text-loop";
+import { Spinner } from "@/components/ui/spinner";
 
 function transformAbsoluteToRelativeImports(code: string): string {
   return code
@@ -352,10 +354,37 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
   },
 };
 
+const LOADING_MESSAGES = [
+  "Setting up your environment...",
+  "Installing dependencies...",
+  "Compiling TypeScript...",
+  "Building components...",
+  "Bundling assets...",
+  "Almost there...",
+];
+
+function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
+  if (!isLoading) return null;
+
+  return (
+    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-60">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner className="size-6" />
+        <TextLoop className="font-mono text-sm text-muted-foreground">
+          {LOADING_MESSAGES.map((message, index) => (
+            <span key={index}>{message}</span>
+          ))}
+        </TextLoop>
+      </div>
+    </div>
+  );
+}
+
 export function ComponentViewer() {
   const { activeComponentName } = useActiveComponent();
   const { data: allComponents = [] } = useComponents();
   const { resolvedTheme } = useTheme();
+  const [isLoading, setIsLoading] = useState(true);
 
   const activeComponent = useMemo(() => {
     return allComponents.find(
@@ -426,7 +455,10 @@ export function ComponentViewer() {
         initMode: "immediate",
       }}
     >
-      <UpdateFiles activeComponent={activeComponent} />
+      <UpdateFiles
+        activeComponent={activeComponent}
+        setIsLoading={setIsLoading}
+      />
       <ThemeCommandPalette />
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
@@ -451,7 +483,7 @@ export function ComponentViewer() {
             <div className="bg-secondary px-4 py-2 border-b">
               <h3 className="text-sm font-medium text-foreground">Preview</h3>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <SandboxLayout>
                 <SandboxPreview
                   showOpenInCodeSandbox={false}
@@ -459,6 +491,7 @@ export function ComponentViewer() {
                   className="h-full!"
                 />
               </SandboxLayout>
+              <LoadingOverlay isLoading={isLoading} />
             </div>
           </div>
         </div>
@@ -467,7 +500,13 @@ export function ComponentViewer() {
   );
 }
 
-function UpdateFiles({ activeComponent }: { activeComponent?: ComponentData }) {
+function UpdateFiles({
+  activeComponent,
+  setIsLoading,
+}: {
+  activeComponent?: ComponentData;
+  setIsLoading: (loading: boolean) => void;
+}) {
   const { resolvedTheme } = useTheme();
   const { sandpack, listen } = useSandpack();
   const { refresh } = useSandpackNavigation();
@@ -477,12 +516,15 @@ function UpdateFiles({ activeComponent }: { activeComponent?: ComponentData }) {
       console.log(message);
       if (message.type === "done" && message.compilatonError === false) {
         // DOM has rendered successfully, trigger your refresh here
-        refresh();
+        setTimeout(() => {
+          refresh();
+          setIsLoading(false);
+        }, 4000);
       }
     });
 
     return unsubscribe;
-  }, [listen]);
+  }, [listen, setIsLoading]);
 
   useEffect(() => {
     if (!activeComponent) return;
