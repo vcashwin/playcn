@@ -5,6 +5,7 @@ import {
   SandboxLayout,
   SandboxCodeEditor,
   SandboxPreview,
+  SandboxConsole,
 } from "@/components/kibo-ui/sandbox";
 import { ComponentData, useComponents } from "@/hooks/use-components";
 import { useActiveComponent } from "@/stores/use-active-component";
@@ -253,6 +254,21 @@ export default {
 };
 `;
 
+const getViteConfigTS = (
+  dependencies: Record<string, string>
+) => `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    include: [${Object.keys(dependencies)
+      .map((dep) => `"${dep}"`)
+      .join(",")}]
+  },
+})
+`;
+
 const getIndexHTML = (isDark: boolean) => `
 <!DOCTYPE html>
   <html lang="en"${isDark ? ' class="dark"' : ""}>
@@ -329,6 +345,10 @@ const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
     code: TAILWIND_CONFIG_JS,
     readOnly: false,
   },
+  "/vite.config.ts": {
+    code: getViteConfigTS(ALL_DEPENDENCIES),
+    readOnly: false,
+  },
 };
 
 export function ComponentViewer() {
@@ -386,7 +406,7 @@ export function ComponentViewer() {
     }
 
     return setupFiles;
-  }, [activeComponent, resolvedTheme]);
+  }, [activeComponent]);
 
   if (Object.keys(files).length === 0) {
     return (
@@ -401,6 +421,9 @@ export function ComponentViewer() {
       template="vite-react-ts"
       files={files}
       theme={resolvedTheme === "dark" ? "dark" : "light"}
+      options={{
+        initMode: "immediate",
+      }}
     >
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
@@ -415,6 +438,7 @@ export function ComponentViewer() {
                   showTabs
                   showLineNumbers
                   showInlineErrors
+                  wrapContent
                   className="h-full! pb-8"
                 />
               </SandboxLayout>
@@ -427,13 +451,19 @@ export function ComponentViewer() {
               <h3 className="text-sm font-medium text-foreground">Preview</h3>
             </div>
             <div className="flex-1">
-              <SandboxLayout>
-                <SandboxPreview
-                  showOpenInCodeSandbox={false}
-                  showRefreshButton
-                  className="h-full! p-8"
-                />
-              </SandboxLayout>
+              <div className="flex flex-col h-full">
+                <SandboxLayout>
+                  <SandboxPreview
+                    showOpenInCodeSandbox={false}
+                    showRefreshButton
+                    className="h-full! p-8"
+                  />
+                </SandboxLayout>
+
+                <SandboxLayout>
+                  <SandboxConsole className="h-64!" />
+                </SandboxLayout>
+              </div>
             </div>
           </div>
         </div>
@@ -459,7 +489,7 @@ function UpdateDarkMode({
     return () => clearTimeout(timeout);
   }, [files, refresh]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));
   }, [resolvedTheme]);
 
