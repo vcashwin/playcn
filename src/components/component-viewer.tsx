@@ -14,7 +14,7 @@ import {
   useSandpackNavigation,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useLayoutEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ALL_DEPENDENCIES } from "@/lib/component-registry";
 
 function transformAbsoluteToRelativeImports(code: string): string {
@@ -30,7 +30,7 @@ import App from "./App";
 import "./styles.css";
 import "./input.css";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-8"><App /></div>);`;
+ReactDOM.createRoot(document.getElementById("root")!).render(<div className="w-full h-full p-12"><App /></div>);`;
 
 const UTILS_TS = `
 import { clsx, type ClassValue } from "clsx"

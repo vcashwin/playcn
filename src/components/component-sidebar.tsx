@@ -1,11 +1,10 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { ThemeSwitcher } from "./theme-switcher";
+import { GitHubLink } from "./github-link";
 
 export type Component = {
   name: string;
@@ -34,7 +33,10 @@ export function ComponentSidebar({
       <div className="p-4 pb-2">
         <div className="pb-2 flex items-center justify-between">
           <h2 className="text-xl font-semibold mb-[0.5]">PlayCN</h2>
-          <ThemeSwitcher />
+          <div className="flex items-center">
+            <GitHubLink />
+            <ThemeSwitcher />
+          </div>
         </div>
       </div>
       <Separator />
