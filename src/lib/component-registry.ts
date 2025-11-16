@@ -1419,8 +1419,7 @@ export default function DropdownMenuDemo() {
   )
 }`,
 
-  empty: `import { IconFolderCode } from "@tabler/icons-react"
-import { ArrowUpRightIcon } from "lucide-react"
+  empty: `"import { ArrowUpRightIcon, FolderIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -1437,7 +1436,7 @@ export default function EmptyDemo() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <IconFolderCode />
+          <FolderIcon />
         </EmptyMedia>
         <EmptyTitle>No Projects Yet</EmptyTitle>
         <EmptyDescription>
@@ -1693,8 +1692,7 @@ export default function InputDemo() {
   return <Input type="email" placeholder="Email" />
 }`,
 
-  "input-group": `import { IconCheck, IconInfoCircle, IconPlus } from "@tabler/icons-react"
-import { ArrowUpIcon, Search } from "lucide-react"
+  "input-group": `"import { ArrowUpIcon, Search, CheckIcon, InfoIcon, PlusIcon } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -1736,7 +1734,7 @@ export default function InputGroupDemo() {
           <Tooltip>
             <TooltipTrigger asChild>
               <InputGroupButton className="rounded-full" size="icon-xs">
-                <IconInfoCircle />
+                <InfoIcon />
               </InputGroupButton>
             </TooltipTrigger>
             <TooltipContent>This is content in a tooltip.</TooltipContent>
@@ -1751,7 +1749,7 @@ export default function InputGroupDemo() {
             className="rounded-full"
             size="icon-xs"
           >
-            <IconPlus />
+            <PlusIcon />
           </InputGroupButton>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1784,7 +1782,7 @@ export default function InputGroupDemo() {
         <InputGroupInput placeholder="@shadcn" />
         <InputGroupAddon align="inline-end">
           <div className="bg-primary text-primary-foreground flex size-4 items-center justify-center rounded-full">
-            <IconCheck className="size-3" />
+            <CheckIcon className="size-3" />
           </div>
         </InputGroupAddon>
       </InputGroup>
