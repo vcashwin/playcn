@@ -559,17 +559,6 @@ function UpdateFiles({
     const transformedComponentCode =
       transformAbsoluteToRelativeImports(componentCode);
 
-    // Get all current .tsx files (component files) to remove
-    const currentTsxFiles = Object.keys(sandpack.files).filter(
-      (file) =>
-        file.endsWith(".tsx") && file !== "/index.tsx" && file !== "/App.tsx"
-    );
-
-    // Delete old component files
-    for (const file of currentTsxFiles) {
-      sandpack.deleteFile(file);
-    }
-
     // Close all files except the first one in the array (App.tsx) to maintain the desired order of visible files
     for (const file of sandpack.visibleFiles) {
       if (file !== sandpack.visibleFiles[0]) {
@@ -578,15 +567,21 @@ function UpdateFiles({
     }
 
     // Update App.tsx and add new component files
-    sandpack.updateFile(`/${componentName}.tsx`, transformedComponentCode);
+    if (!sandpack.files[`/${componentName}.tsx`]) {
+      sandpack.updateFile(`/${componentName}.tsx`, transformedComponentCode);
+    }
+
     sandpack.openFile(`/${componentName}.tsx`);
 
     // Add other component files
     for (const [fileName, code] of Object.entries(componentFiles)) {
       if (fileName === componentName) continue;
 
-      const transformedCode = transformAbsoluteToRelativeImports(code);
-      sandpack.updateFile(`/${fileName}.tsx`, transformedCode);
+      if (!sandpack.files[`/${fileName}.tsx`]) {
+        const transformedCode = transformAbsoluteToRelativeImports(code);
+        sandpack.updateFile(`/${fileName}.tsx`, transformedCode);
+      }
+
       sandpack.openFile(`/${fileName}.tsx`);
     }
 
