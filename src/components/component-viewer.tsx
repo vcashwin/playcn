@@ -182,8 +182,13 @@ body {
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --code-editor-background: #ffffff;
   height: 100%;
   background-color: var(--background);
+}
+
+.dark, [data-theme='dark'] {
+  --code-editor-background: #151515;
 }`;
 
 const TAILWIND_CONFIG_JS = `
@@ -276,8 +281,9 @@ export default defineConfig({
 })
 `;
 
-const getIndexHTML = () => `<!DOCTYPE html>
-  <html lang="en">
+const getIndexHTML = (isDark: boolean) => `
+<!DOCTYPE html>
+  <html lang="en"${isDark ? ' class="dark"' : ""}>
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -426,7 +432,7 @@ export function ComponentViewer() {
       },
       ...INITIAL_FILES,
       "/index.html": {
-        code: getIndexHTML(),
+        code: getIndexHTML(resolvedTheme === "dark"),
         readOnly: false,
       },
       "/package.json": {
@@ -522,6 +528,7 @@ function UpdateFiles({
   activeComponent?: ComponentData;
   setIsLoading: (loading: boolean) => void;
 }) {
+  const { resolvedTheme } = useTheme();
   const { sandpack, listen } = useSandpack();
   const { refresh } = useSandpackNavigation();
 
@@ -595,6 +602,10 @@ function UpdateFiles({
       refresh();
     }, 300);
   }, [activeComponent]);
+
+  useEffect(() => {
+    sandpack.updateFile("/index.html", getIndexHTML(resolvedTheme === "dark"));
+  }, [resolvedTheme]);
 
   return null;
 }
