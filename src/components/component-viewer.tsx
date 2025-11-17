@@ -376,7 +376,7 @@ function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
   if (!isLoading) return null;
 
   return (
-    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center opacity-60">
+    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center opacity-60">
       <div className="flex flex-col items-center gap-4">
         <Spinner className="size-6" />
         <TextLoop className="font-mono text-sm text-muted-foreground">

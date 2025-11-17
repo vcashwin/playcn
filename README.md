@@ -9,6 +9,7 @@ Built using Sandpack, React and TailwindCSS.
 https://github.com/user-attachments/assets/aade66be-f6a7-4a4e-b2ff-7e85cceb7c9b
 
 ## Features
+
 - Prototype and modify shadcn/ui primitives for your design system
 - Light/Dark Mode support
 - Switch themes using `Cmd + k` or `Ctrl + k`. Powered by [tweakcn](https://tweakcn.com/)
@@ -27,6 +28,3 @@ pnpm run dev
 
 If you’d like to improve this project, feel free to fork it and open a pull request.
 Reach out [@wizardashwin](https://x.com/wizardashwin) for any questions.
-
-
-
