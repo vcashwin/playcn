@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 
-export function SplashScreen() {
+export function SplashScreen({ isMobile }: { isMobile?: boolean }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
       {/* Animated Background Grid */}
@@ -107,6 +107,15 @@ export function SplashScreen() {
         <div className="flex flex-col items-center gap-4 text-center">
           <h1 className="text-4xl font-bold tracking-tight">PlayCN</h1>
         </div>
+
+        {isMobile && (
+          <div className="flex flex-col items-center gap-4 text-center">
+            <h3 className="text-xs tracking-tight">
+              Currently optimized for Web. <br />
+              Pls use desktop for best experience.
+            </h3>
+          </div>
+        )}
       </div>
 
       {/* Floating Elements */}
