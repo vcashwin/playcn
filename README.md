@@ -6,7 +6,7 @@ Built using Sandpack, React and TailwindCSS.
 
 [Try now](https://playcn.vercel.app/)
 
-https://github.com/user-attachments/assets/8909b6d4-9093-49b1-8a43-0459b7cf5fff
+https://github.com/user-attachments/assets/aade66be-f6a7-4a4e-b2ff-7e85cceb7c9b
 
 ## Features
 - Prototype and modify shadcn/ui primitives for your design system
