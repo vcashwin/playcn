@@ -1692,7 +1692,7 @@ export default function InputDemo() {
   return <Input type="email" placeholder="Email" />
 }`,
 
-  "input-group": `"import { ArrowUpIcon, Search, CheckIcon, InfoIcon, PlusIcon } from "lucide-react"
+  "input-group": `import { ArrowUpIcon, Search, CheckIcon, InfoIcon, PlusIcon } from "lucide-react"
 
 import {
   DropdownMenu,
