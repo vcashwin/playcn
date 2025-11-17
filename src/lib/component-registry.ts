@@ -188,7 +188,7 @@ export default function AccordionDemo() {
     <Accordion
       type="single"
       collapsible
-      className="w-full"
+      className="w-full dark:text-white"
       defaultValue="item-1"
     >
       <AccordionItem value="item-1">
