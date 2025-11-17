@@ -104,7 +104,7 @@ export function SplashScreen() {
         </motion.div>
 
         {/* Text Content */}
-        <div className="flex flex-col items-center gap-4 text-center animate-in fade-in slide-in-from-bottom duration-700 delay-500">
+        <div className="flex flex-col items-center gap-4 text-center">
           <h1 className="text-4xl font-bold tracking-tight">PlayCN</h1>
         </div>
       </div>
