@@ -19,32 +19,34 @@ function getParserForFile(filePath: string): string | null {
   return null;
 }
 
-// Cache for dynamically loaded prettier modules
-let prettierCache: {
-  prettier: typeof import("prettier/standalone") | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  plugins: any[] | null;
-} = {
-  prettier: null,
-  plugins: null,
-};
+// Cache for dynamically loaded prettier modules from CDN
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let prettierCache: { prettier: any; plugins: any[] } | null = null;
+
+// Dynamic import function that bypasses bundler for CDN URLs
+async function importFromCDN(url: string): Promise<unknown> {
+  // Use Function constructor to create a dynamic import that bundlers won't process
+  const dynamicImport = new Function("url", "return import(url)");
+  return dynamicImport(url);
+}
 
 async function loadPrettier() {
-  if (prettierCache.prettier && prettierCache.plugins) {
+  if (prettierCache) {
     return prettierCache;
   }
 
-  const [prettier, babel, estree, typescript, css] = await Promise.all([
-    import("prettier/standalone"),
-    import("prettier/plugins/babel"),
-    import("prettier/plugins/estree"),
-    import("prettier/plugins/typescript"),
-    import("prettier/plugins/postcss"),
+  // Load prettier and plugins from esm.sh CDN to avoid bundler issues
+  const [prettier, babel, estree, typescript, postcss] = await Promise.all([
+    importFromCDN("https://esm.sh/prettier@3.3.3/standalone"),
+    importFromCDN("https://esm.sh/prettier@3.3.3/plugins/babel"),
+    importFromCDN("https://esm.sh/prettier@3.3.3/plugins/estree"),
+    importFromCDN("https://esm.sh/prettier@3.3.3/plugins/typescript"),
+    importFromCDN("https://esm.sh/prettier@3.3.3/plugins/postcss"),
   ]);
 
   prettierCache = {
-    prettier: prettier,
-    plugins: [babel.default, estree.default, typescript.default, css.default],
+    prettier,
+    plugins: [babel, estree, typescript, postcss],
   };
 
   return prettierCache;
