@@ -1,11 +1,6 @@
 "use client";
 
 import { useSandpack } from "@codesandbox/sandpack-react";
-import prettierPluginBabel from "prettier/plugins/babel";
-import prettierPluginEstree from "prettier/plugins/estree";
-import prettierPluginCss from "prettier/plugins/postcss";
-import prettierPluginTypescript from "prettier/plugins/typescript";
-import * as prettier from "prettier/standalone";
 import { useCallback, useEffect, useRef } from "react";
 
 function getParserForFile(filePath: string): string | null {
@@ -22,6 +17,37 @@ function getParserForFile(filePath: string): string | null {
     return "json";
   }
   return null;
+}
+
+// Cache for dynamically loaded prettier modules
+let prettierCache: {
+  prettier: typeof import("prettier/standalone") | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins: any[] | null;
+} = {
+  prettier: null,
+  plugins: null,
+};
+
+async function loadPrettier() {
+  if (prettierCache.prettier && prettierCache.plugins) {
+    return prettierCache;
+  }
+
+  const [prettier, babel, estree, typescript, css] = await Promise.all([
+    import("prettier/standalone"),
+    import("prettier/plugins/babel"),
+    import("prettier/plugins/estree"),
+    import("prettier/plugins/typescript"),
+    import("prettier/plugins/postcss"),
+  ]);
+
+  prettierCache = {
+    prettier: prettier,
+    plugins: [babel.default, estree.default, typescript.default, css.default],
+  };
+
+  return prettierCache;
 }
 
 export function CodeFormatter() {
@@ -47,14 +73,12 @@ export function CodeFormatter() {
     isFormattingRef.current = true;
 
     try {
+      const { prettier, plugins } = await loadPrettier();
+      if (!prettier || !plugins) return;
+
       const formatted = await prettier.format(code, {
         parser,
-        plugins: [
-          prettierPluginBabel,
-          prettierPluginEstree,
-          prettierPluginTypescript,
-          prettierPluginCss,
-        ],
+        plugins,
         semi: true,
         singleQuote: false,
         tabWidth: 2,
