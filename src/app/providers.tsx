@@ -15,7 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             staleTime: Infinity,
           },
         },
-      })
+      }),
   );
 
   return (

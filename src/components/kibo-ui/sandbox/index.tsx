@@ -49,7 +49,7 @@ export const SandboxLayout = ({
   <SandpackLayout
     className={cn(
       "!rounded-none !border-none !bg-transparent !h-full",
-      className
+      className,
     )}
     {...props}
   />
@@ -61,7 +61,7 @@ export type SandboxTabsContextValue = {
 };
 
 const SandboxTabsContext = createContext<SandboxTabsContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 const useSandboxTabsContext = () => {
@@ -69,7 +69,7 @@ const useSandboxTabsContext = () => {
 
   if (!context) {
     throw new Error(
-      "SandboxTabs components must be used within a SandboxTabsProvider"
+      "SandboxTabs components must be used within a SandboxTabsProvider",
     );
   }
 
@@ -104,7 +104,7 @@ export const SandboxTabs = ({
       }
       onValueChange?.(newValue);
     },
-    [value, onValueChange]
+    [value, onValueChange],
   );
 
   return (
@@ -112,7 +112,7 @@ export const SandboxTabs = ({
       <div
         className={cn(
           "group relative flex size-full flex-col overflow-hidden rounded-lg border text-sm",
-          className
+          className,
         )}
         {...props}
         data-selected={selectedTab}
@@ -132,7 +132,7 @@ export const SandboxTabsList = ({
   <div
     className={cn(
       "inline-flex w-full shrink-0 items-center justify-start border-b bg-secondary p-2 text-muted-foreground",
-      className
+      className,
     )}
     role="tablist"
     {...props}
@@ -162,7 +162,7 @@ export const SandboxTabsTrigger = ({
       aria-selected={selectedTab === value}
       className={cn(
         "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 font-medium text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
-        className
+        className,
       )}
       data-state={selectedTab === value ? "active" : "inactive"}
       onClick={handleClick}
@@ -191,7 +191,7 @@ export const SandboxTabsContent = ({
         selectedTab === value
           ? "h-auto w-auto opacity-100"
           : "pointer-events-none absolute h-0 w-0 opacity-0",
-        className
+        className,
       )}
       data-state={selectedTab === value ? "active" : "inactive"}
       role="tabpanel"

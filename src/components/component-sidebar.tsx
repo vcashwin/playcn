@@ -25,7 +25,7 @@ export function ComponentSidebar({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredComponents = components.filter((component) =>
-    component.name.toLowerCase().includes(searchQuery.toLowerCase())
+    component.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -57,7 +57,7 @@ export function ComponentSidebar({
               className={cn(
                 "w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
                 selectedComponent === component.fileName &&
-                  "bg-accent text-accent-foreground"
+                  "bg-accent text-accent-foreground",
               )}
             >
               {component.name}
