@@ -17,6 +17,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { ALL_DEPENDENCIES } from "@/lib/component-registry";
 import { ThemeCommandPalette } from "./theme-command-palette";
+import { CodeFormatter } from "./code-formatter";
 import { TextLoop } from "@/components/text-loop";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -261,7 +262,7 @@ export default {
 `;
 
 const getViteConfigTS = (
-  dependencies: Record<string, string>
+  dependencies: Record<string, string>,
 ) => `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -323,7 +324,7 @@ const getPackageJSON = (dependencies: Record<string, string>) =>
       },
     },
     null,
-    2
+    2,
   );
 
 const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
@@ -391,7 +392,7 @@ export function ComponentViewer() {
 
   const activeComponent = useMemo(() => {
     return allComponents.find(
-      (c) => c.fileName === activeComponentName
+      (c) => c.fileName === activeComponentName,
     ) as ComponentData;
   }, [allComponents, activeComponentName]);
 
@@ -409,7 +410,7 @@ export function ComponentViewer() {
 
     // Find and extract sonner component
     const sonnerComponent = allComponents.find(
-      (c) => c.fileName === "sonner.tsx"
+      (c) => c.fileName === "sonner.tsx",
     );
     const sonnerCode = sonnerComponent?.files["sonner"] || "";
     const transformedSonnerCode =
@@ -475,6 +476,7 @@ export function ComponentViewer() {
         setIsLoading={setIsLoading}
       />
       <ThemeCommandPalette />
+      <CodeFormatter />
       <div className="h-screen grid grid-cols-2">
         <div className="col-span-1 border-r overflow-y-scroll">
           <div className="h-full flex flex-col">

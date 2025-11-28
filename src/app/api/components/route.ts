@@ -24,8 +24,7 @@ export async function GET() {
     console.error("Error reading components directory:", error);
     return NextResponse.json(
       { error: "Failed to load components" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -72,7 +72,7 @@ export function ThemeCommandPalette() {
   const handleThemeSelect = (themeId: string) => {
     sandpack.updateFile(
       "theme.css",
-      convertThemeToVariables(defaultPresets[themeId])
+      convertThemeToVariables(defaultPresets[themeId]),
     );
     setOpen(false);
   };
@@ -81,7 +81,7 @@ export function ThemeCommandPalette() {
     window.open(
       "https://tweakcn.com/editor/theme",
       "_blank",
-      "noopener,noreferrer"
+      "noopener,noreferrer",
     );
   };
 

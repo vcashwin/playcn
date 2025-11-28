@@ -25,7 +25,7 @@ function extractUIImports(code: string): string[] {
 async function loadComponentWithDependencies(
   componentFileName: string,
   componentsDir: string,
-  loadedComponents = new Set<string>()
+  loadedComponents = new Set<string>(),
 ): Promise<Record<string, string>> {
   // Prevent circular dependencies and duplicates
   if (loadedComponents.has(componentFileName)) {
@@ -54,7 +54,7 @@ async function loadComponentWithDependencies(
       const dependencyFiles = await loadComponentWithDependencies(
         dependencyFileName,
         componentsDir,
-        loadedComponents
+        loadedComponents,
       );
 
       // Merge dependency files
@@ -94,7 +94,7 @@ export async function GET() {
       const componentFiles = await loadComponentWithDependencies(
         component.fileName,
         componentsDir,
-        loadedComponents
+        loadedComponents,
       );
 
       const componentKey = component.fileName.replace(".tsx", "");
@@ -113,7 +113,7 @@ export async function GET() {
             const dependencyFiles = await loadComponentWithDependencies(
               dependencyFileName,
               componentsDir,
-              loadedComponents
+              loadedComponents,
             );
 
             // Merge dependency files
@@ -135,7 +135,7 @@ export async function GET() {
     console.error("Error loading all components:", error);
     return NextResponse.json(
       { error: "Failed to load components" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
