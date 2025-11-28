@@ -1,24 +1,24 @@
 "use client";
 
 import {
-  SandboxProvider,
-  SandboxLayout,
-  SandboxCodeEditor,
-  SandboxPreview,
-  SandboxConsole,
-} from "@/components/kibo-ui/sandbox";
-import { ComponentData, useComponents } from "@/hooks/use-components";
-import { useActiveComponent } from "@/stores/use-active-component";
-import {
   useSandpack,
   useSandpackNavigation,
 } from "@codesandbox/sandpack-react";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo, useState } from "react";
-import { ALL_DEPENDENCIES } from "@/lib/component-registry";
-import { ThemeCommandPalette } from "./theme-command-palette";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  SandboxCodeEditor,
+  SandboxConsole,
+  SandboxLayout,
+  SandboxPreview,
+  SandboxProvider,
+} from "@/components/kibo-ui/sandbox";
 import { TextLoop } from "@/components/text-loop";
 import { Spinner } from "@/components/ui/spinner";
+import { type ComponentData, useComponents } from "@/hooks/use-components";
+import { ALL_DEPENDENCIES } from "@/lib/component-registry";
+import { useActiveComponent } from "@/stores/use-active-component";
+import { ThemeCommandPalette } from "./theme-command-palette";
 
 function transformAbsoluteToRelativeImports(code: string): string {
   return code
@@ -261,7 +261,7 @@ export default {
 `;
 
 const getViteConfigTS = (
-  dependencies: Record<string, string>
+  dependencies: Record<string, string>,
 ) => `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -323,7 +323,7 @@ const getPackageJSON = (dependencies: Record<string, string>) =>
       },
     },
     null,
-    2
+    2,
   );
 
 const INITIAL_FILES: Record<string, { code: string; readOnly?: boolean }> = {
@@ -366,15 +366,29 @@ const LOADING_MESSAGES = [
   "Almost there...",
 ];
 
-function LoadingOverlay({ isLoading }: { isLoading: boolean }) {
+const RECONNECTING_MESSAGES = [
+  "Reconnecting to sandbox...",
+  "Restoring your session...",
+  "Almost ready...",
+];
+
+function LoadingOverlay({
+  isLoading,
+  isReconnecting,
+}: {
+  isLoading: boolean;
+  isReconnecting: boolean;
+}) {
   if (!isLoading) return null;
+
+  const messages = isReconnecting ? RECONNECTING_MESSAGES : LOADING_MESSAGES;
 
   return (
     <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center opacity-60">
       <div className="flex flex-col items-center gap-4">
         <Spinner className="size-6" />
         <TextLoop className="font-mono text-sm text-muted-foreground">
-          {LOADING_MESSAGES.map((message, index) => (
+          {messages.map((message, index) => (
             <span key={index}>{message}</span>
           ))}
         </TextLoop>
@@ -388,10 +402,11 @@ export function ComponentViewer() {
   const { data: allComponents = [] } = useComponents();
   const { resolvedTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   const activeComponent = useMemo(() => {
     return allComponents.find(
-      (c) => c.fileName === activeComponentName
+      (c) => c.fileName === activeComponentName,
     ) as ComponentData;
   }, [allComponents, activeComponentName]);
 
@@ -409,7 +424,7 @@ export function ComponentViewer() {
 
     // Find and extract sonner component
     const sonnerComponent = allComponents.find(
-      (c) => c.fileName === "sonner.tsx"
+      (c) => c.fileName === "sonner.tsx",
     );
     const sonnerCode = sonnerComponent?.files["sonner"] || "";
     const transformedSonnerCode =
@@ -473,6 +488,8 @@ export function ComponentViewer() {
       <UpdateFiles
         activeComponent={activeComponent}
         setIsLoading={setIsLoading}
+        isReconnecting={isReconnecting}
+        setIsReconnecting={setIsReconnecting}
       />
       <ThemeCommandPalette />
       <div className="h-screen grid grid-cols-2">
@@ -506,7 +523,10 @@ export function ComponentViewer() {
                   className="h-full!"
                 />
               </SandboxLayout>
-              <LoadingOverlay isLoading={isLoading} />
+              <LoadingOverlay
+                isLoading={isLoading}
+                isReconnecting={isReconnecting}
+              />
             </div>
           </div>
         </div>
@@ -518,28 +538,98 @@ export function ComponentViewer() {
 function UpdateFiles({
   activeComponent,
   setIsLoading,
+  isReconnecting,
+  setIsReconnecting,
 }: {
   activeComponent?: ComponentData;
   setIsLoading: (loading: boolean) => void;
+  isReconnecting: boolean;
+  setIsReconnecting: (reconnecting: boolean) => void;
 }) {
   const { resolvedTheme } = useTheme();
   const { sandpack, listen } = useSandpack();
   const { refresh } = useSandpackNavigation();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track previous status to detect transitions
+  const previousStatusRef = useRef(sandpack.status);
+
+  // Handle visibility change to detect when user comes back to the tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // User came back to the tab, check if sandpack is disconnected
+        if (sandpack.status === "timeout" || sandpack.status === "idle") {
+          setIsLoading(true);
+          setIsReconnecting(true);
+          // Small delay to ensure UI updates before triggering reload
+          setTimeout(() => {
+            sandpack.runSandpack();
+          }, 100);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [sandpack, setIsLoading, setIsReconnecting]);
+
+  // Monitor sandpack status changes for disconnection
+  useEffect(() => {
+    const currentStatus = sandpack.status;
+    const previousStatus = previousStatusRef.current;
+
+    // Detect transition to timeout or idle state (disconnection)
+    if (
+      (currentStatus === "timeout" || currentStatus === "idle") &&
+      previousStatus !== "timeout" &&
+      previousStatus !== "idle" &&
+      previousStatus !== "initial"
+    ) {
+      setIsLoading(true);
+      setIsReconnecting(true);
+
+      // Clear any existing timeout
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+
+      // Auto-reconnect after a brief delay
+      reconnectTimeoutRef.current = setTimeout(() => {
+        sandpack.runSandpack();
+      }, 500);
+    }
+
+    previousStatusRef.current = currentStatus;
+
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+    };
+  }, [sandpack.status, sandpack, setIsLoading, setIsReconnecting]);
+
+  // Listen for sandpack messages to detect completion
   useEffect(() => {
     const unsubscribe = listen((message) => {
       console.log(message);
+
+      // Handle successful compilation
       if (message.type === "done" && message.compilatonError === false) {
         // DOM has rendered successfully, trigger your refresh here
+        const delay = isReconnecting ? 1000 : 4000;
         setTimeout(() => {
           refresh();
           setIsLoading(false);
-        }, 4000);
+          setIsReconnecting(false);
+        }, delay);
       }
     });
 
     return unsubscribe;
-  }, [listen, setIsLoading]);
+  }, [listen, setIsLoading, setIsReconnecting, isReconnecting, refresh]);
 
   useEffect(() => {
     if (!activeComponent) return;
