@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PlayCN",
-  description: "Playground for Shadcn UI components",
+  description: "Playground for shadcn ui components, similar to play.tailwind.css",
 };
 
 export default function RootLayout({
